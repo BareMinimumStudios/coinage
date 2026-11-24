@@ -1,0 +1,124 @@
+package com.glisco.numismaticoverhaul.mixin;
+
+import com.glisco.numismaticoverhaul.ModComponents;
+import com.glisco.numismaticoverhaul.block.pawn.PawnShopBlockEntity;
+import com.glisco.numismaticoverhaul.block.pawn.PawnShopMerchant;
+import com.glisco.numismaticoverhaul.block.shop.ShopMerchant;
+import com.glisco.numismaticoverhaul.currency.CurrencyComponent;
+import com.glisco.numismaticoverhaul.currency.CurrencyHelper;
+import com.glisco.numismaticoverhaul.item.CoinItem;
+import com.glisco.numismaticoverhaul.item.NumismaticOverhaulItems;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.screen.MerchantScreenHandler;
+import net.minecraft.text.Text;
+import net.minecraft.village.Merchant;
+import net.minecraft.village.TradedItem;
+import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(MerchantScreenHandler.class)
+public class MerchantScreenHandlerMixin {
+
+    @Shadow
+    @Final
+    private Merchant merchant;
+
+    //Autofill with coins from the player's purse if the trade requires it
+    //Injected at TAIL to let normal autofill run and fill up if anything is missing
+    @Inject(method = "autofill", at = @At("TAIL"))
+    public void autofillOverride(int slot, TradedItem tradedItem, CallbackInfo ci) {
+        var stack = tradedItem.itemStack();
+        MerchantScreenHandler handler = (MerchantScreenHandler) (Object) this;
+        CurrencyComponent playerBalance = ModComponents.CURRENCY.get(((PlayerInventory) handler.getSlot(3).inventory).player);
+
+        if (stack.getItem() instanceof CoinItem) {
+            numismatic$autofillWithCoins(slot, stack, handler, playerBalance);
+        } else if (stack.getItem() == NumismaticOverhaulItems.MONEY_BAG) {
+            numismatic$autofillWithMoneyBag(slot, stack, handler, playerBalance);
+        }
+
+        // TODO: Review: Removed if (slot == 1) check as it was causing coins to not actually be removed the purse when trading
+        playerBalance.commitTransactions();
+    }
+
+    @Unique
+    private static void numismatic$autofillWithCoins(int slot, ItemStack stack, MerchantScreenHandler handler, CurrencyComponent playerBalance) {
+        //See how much is required and how much was already autofilled
+        long requiredCurrency = ((CoinItem) stack.getItem()).currency.getRawValue(stack.getCount());
+        long presentCurrency = ((CoinItem) stack.getItem()).currency.getRawValue(handler.getSlot(slot).getStack().getCount());
+
+        if (requiredCurrency <= presentCurrency) return;
+
+        //Find out how much we still need to fill
+        long neededCurrency = requiredCurrency - presentCurrency;
+
+        //Is that even possible?
+        if (!(neededCurrency <= playerBalance.getValue())) return;
+
+        playerBalance.pushTransaction(-neededCurrency);
+
+        handler.slots.get(slot).setStack(stack.copy());
+    }
+
+    @Unique
+    private static void numismatic$autofillWithMoneyBag(int slot, ItemStack stack, MerchantScreenHandler handler, CurrencyComponent playerBalance) {
+        if (ItemStack.areEqual(stack, handler.getSlot(slot).getStack())) return;
+        PlayerEntity player = ((PlayerInventory) handler.getSlot(3).inventory).player;
+
+        //See how much is required and how much in present in the player's inventory
+        long requiredCurrency = NumismaticOverhaulItems.MONEY_BAG.getValue(stack);
+        long availableCurrencyInPlayerInventory = CurrencyHelper.getMoneyInInventory(player, false);
+
+        //Find out how much we still need to fill
+        long neededCurrency = requiredCurrency - availableCurrencyInPlayerInventory;
+
+        //Is that even possible?
+        if (neededCurrency > playerBalance.getValue()) return;
+
+        if (neededCurrency <= 0) {
+            CurrencyHelper.deductFromInventory(player, requiredCurrency);
+        } else {
+            CurrencyHelper.deductFromInventory(player, availableCurrencyInPlayerInventory);
+            playerBalance.pushTransaction(-neededCurrency);
+        }
+
+        handler.slots.get(slot).setStack(stack.copy());
+    }
+
+    @Inject(method = "playYesSound", at = @At("HEAD"), cancellable = true)
+    public void checkForEntityOnYes(CallbackInfo ci) {
+        if (!(merchant instanceof Entity)) ci.cancel();
+    }
+
+    @Inject(method = "canUse", at = @At("HEAD"), cancellable = true)
+    public void thwartTaxEvasion(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
+        BlockEntity shop = null;
+        if (this.merchant instanceof ShopMerchant shopMerchant) {
+            shop = shopMerchant.shop();
+        } else if (this.merchant instanceof PawnShopMerchant pawnShopMerchant) {
+            shop = pawnShopMerchant.shop();
+        }
+        if (shop == null) return;
+
+        boolean isPawnShop = shop instanceof PawnShopBlockEntity;
+
+        var pos = shop.getPos();
+        if (shop.isRemoved() || shop.getWorld() == null || shop.getWorld().getBlockEntity(pos) != shop) {
+            cir.setReturnValue(false);
+        }
+        if (player.squaredDistanceTo((double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5) > 100.0) {
+            var translation = isPawnShop ? "pawn" : "shop";
+            player.sendMessage(Text.translatable("feedback.numismatic-overhaul.%s.out_of_reach".formatted(translation)), true);
+            cir.setReturnValue(false);
+        }
+    }
+
+}
