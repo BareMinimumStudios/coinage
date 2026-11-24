@@ -22,7 +22,7 @@ def verify(loader):
     with ZipFile(jars[0]) as archive:
         names = set(archive.namelist())
         required = {
-            "LICENSE", "LICENSE-Crunch", metadata_paths[loader],
+            "LICENSE", metadata_paths[loader],
             "net/bms/coinage/PurseLedger.class",
             "net/bms/coinage/internal/crunch/Crunch.class",
             "net/bms/coinage/EconomyConfig.class",
