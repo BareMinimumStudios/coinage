@@ -2,7 +2,7 @@ package net.bms.numismatic_overhaul
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import com.mojang.brigadier.arguments.LongArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.minecraft.commands.CommandSourceStack
@@ -19,7 +19,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                 .then(argument("player", EntityArgument.player())
                     .requires { it.hasPermission(2) }
                     .executes(::showTargetBalance)
-                    .then(literal("set").then(argument("coins", LongArgumentType.longArg(0))
+                    .then(literal("set").then(argument("coins", StringArgumentType.greedyString())
                         .executes(::setBalance)))))
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
@@ -27,7 +27,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                     .executes { showRichest(it, IntegerArgumentType.getInteger(it, "limit")) }))
             .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
                 .then(argument("player", EntityArgument.player())
-                    .then(argument("coins", LongArgumentType.longArg(1)).executes(::pay)))))
+                    .then(argument("coins", StringArgumentType.greedyString()).executes(::pay)))))
     }
 
     private fun showOwnBalance(context: CommandContext<CommandSourceStack>): Int {
@@ -48,7 +48,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
 
     private fun setBalance(context: CommandContext<CommandSourceStack>): Int {
         val player = EntityArgument.getPlayer(context, "player")
-        PurseLedger.get(context.source.server).setBalance(player.uuid, LongArgumentType.getLong(context, "coins"))
+        PurseLedger.get(context.source.server).setBalance(player.uuid, coinAmount(context, 0))
         return showTargetBalance(context)
     }
 
@@ -72,7 +72,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val source = context.source
         val sender = source.playerOrException
         val recipient = EntityArgument.getPlayer(context, "player")
-        val amount = LongArgumentType.getLong(context, "coins")
+        val amount = coinAmount(context, 1)
         if (!config.playerPayments || sender.uuid == recipient.uuid ||
             !PurseLedger.get(source.server).transfer(sender.uuid, recipient.uuid, amount)
         ) {
@@ -83,7 +83,13 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         return 1
     }
 
+    private fun coinAmount(context: CommandContext<CommandSourceStack>, minimum: Long): Long {
+        return CoinAmount.parse(StringArgumentType.getString(context, "coins"), minimum)
+            ?: throw invalidAmount.create()
+    }
+
     private companion object {
+        val invalidAmount = SimpleCommandExceptionType(Component.translatable("command.numismatic_overhaul.amount.invalid"))
         val paymentFailed = SimpleCommandExceptionType(Component.translatable("command.numismatic_overhaul.payment.failed"))
     }
 }

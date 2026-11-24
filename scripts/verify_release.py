@@ -15,19 +15,22 @@ def verify(loader):
     directory = Path(loader, "build", "libs")
     jars = [
         path for path in directory.glob(f"numismatic-overhaul-{loader}-*.jar")
-        if not path.stem.endswith(("-dev", "-sources"))
+        if not path.stem.endswith(("-dev", "-sources", "-all", "-unshaded"))
     ]
     if len(jars) != 1:
         raise SystemExit(f"Expected one release JAR in {directory}. Clean stale builds and retry.")
     with ZipFile(jars[0]) as archive:
         names = set(archive.namelist())
         required = {
-            "LICENSE", metadata_paths[loader],
+            "LICENSE", "LICENSE-Crunch", metadata_paths[loader],
             "net/bms/numismatic_overhaul/PurseLedger.class",
+            "net/bms/numismatic_overhaul/internal/crunch/Crunch.class",
             "net/bms/numismatic_overhaul/EconomyConfig.class",
         }
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
+        if any(name.startswith("redempt/crunch/") for name in names):
+            raise SystemExit(f"{loader} contains an unrelocated copy of Crunch")
         metadata = archive.read(metadata_paths[loader]).decode("utf-8")
         if loader == "fabric":
             mod = json.loads(metadata)

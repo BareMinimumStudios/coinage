@@ -1,5 +1,6 @@
 plugins {
     id 'base'
+    id 'com.gradleup.shadow' version '9.3.1' apply false
     id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}" apply false
     id 'fabric-loom' version "${loom_version}" apply false
     id 'net.neoforged.moddev' version "${moddev_version}" apply false
@@ -13,8 +14,13 @@ allprojects {
 
 subprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'com.gradleup.shadow'
     repositories {
         mavenCentral()
+        exclusiveContent {
+            forRepository { maven { url = 'https://jitpack.io' } }
+            filter { includeModule('com.github.boxbeam', 'Crunch') }
+        }
         maven { url = 'https://api.modrinth.com/maven' }
         maven { url = 'https://maven.fzzyhmstrs.me/' }
         maven { url = 'https://maven.fabricmc.net/' }
@@ -39,7 +45,13 @@ subprojects {
         options.release = 21
         options.encoding = 'UTF-8'
     }
+    configurations {
+        expressionEngine { transitive = false }
+        implementation.extendsFrom(expressionEngine)
+    }
     dependencies {
+        // boxbeam/Crunch rewrite at 0c7d52fc1926960842d11d196832b058580a00b4.
+        expressionEngine 'com.github.boxbeam:Crunch:0c7d52fc19'
         testImplementation platform('org.junit:junit-bom:5.14.0')
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -52,8 +64,14 @@ subprojects {
             expand version: project.version
         }
     }
+    tasks.named('shadowJar') {
+        configurations = [project.configurations.expressionEngine]
+        relocate 'redempt.crunch', 'net.bms.numismatic_overhaul.internal.crunch'
+        exclude 'META-INF/maven/**'
+    }
     tasks.withType(Jar).configureEach {
         from(rootProject.file('LICENSE'))
+        from(rootProject.file('LICENSE-Crunch'))
     }
 }
 

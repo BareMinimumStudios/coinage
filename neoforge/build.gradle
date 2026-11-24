@@ -13,3 +13,7 @@ dependencies {
     implementation "maven.modrinth:fzzy-config:${rootProject.fzzy_neoforge_version}"
     implementation "thedarkcolour:kotlinforforge-neoforge:${rootProject.kotlin_for_forge_version}"
 }
+
+tasks.named('jar') { archiveClassifier.set('unshaded') }
+tasks.named('shadowJar') { archiveClassifier.set('') }
+tasks.named('assemble') { dependsOn tasks.named('shadowJar') }

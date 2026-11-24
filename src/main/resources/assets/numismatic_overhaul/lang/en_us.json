@@ -3,6 +3,7 @@
   "command.numismatic_overhaul.balance.other": "%s has %s coins",
   "command.numismatic_overhaul.top.empty": "Every purse is empty.",
   "command.numismatic_overhaul.top.entry": "%s. %s has %s coins",
+  "command.numismatic_overhaul.amount.invalid": "Enter a valid coin amount or an expression using +, -, and *.",
   "command.numismatic_overhaul.payment.sent": "Sent %s coins to %s",
   "command.numismatic_overhaul.payment.received": "Received %s coins from %s",
   "command.numismatic_overhaul.payment.failed": "Payment failed. Check the recipient and both purse balances."
