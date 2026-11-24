@@ -9,24 +9,24 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.MenuProvider
+import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.inventory.ChestMenu
+import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
+import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
-import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
-import net.minecraft.world.level.Level
-import net.minecraft.world.MenuProvider
 import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.SimpleContainer
 
 class PiggyBankBlock : BaseEntityBlock(BlockBehaviour.Properties.of().strength(1.0f).noOcclusion()) {
     override fun codec(): MapCodec<PiggyBankBlock> = CODEC
@@ -67,7 +67,7 @@ class PiggyBankEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlo
     }
 
     override fun getDisplayName(): Component = Component.translatable("container.coinage.piggy_bank")
-    override fun createMenu(id: Int, playerInventory: Inventory, player: Player) = ChestMenu.threeRows(id, playerInventory, inventory)
+    override fun createMenu(id: Int, playerInventory: Inventory, player: Player): AbstractContainerMenu = PiggyBankMenu(id, playerInventory, inventory)
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
@@ -90,5 +90,13 @@ object CoinageBlocks {
         DyeColor.entries.forEach { put(it.name.lowercase(ROOT) + "_piggy_bank", PiggyBankBlock()) }
     }
     val items = piggyBanks.mapValues { (_, block) -> BlockItem(block, Item.Properties().stacksTo(1)) }
+    val shops = linkedMapOf(
+        "shop" to ShopBlock(false, false),
+        "pawn_shop" to ShopBlock(true, false),
+        "inexhaustible_shop" to ShopBlock(false, true),
+        "inexhaustible_pawn_shop" to ShopBlock(true, true)
+    )
+    val shopItems = shops.mapValues { (_, block) -> BlockItem(block, Item.Properties()) }
+    lateinit var shopType: BlockEntityType<ShopEntity>
     lateinit var piggyType: BlockEntityType<PiggyBankEntity>
 }

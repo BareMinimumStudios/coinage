@@ -1,17 +1,19 @@
 package net.bms.coinage
 
+import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
-import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
-import net.minecraft.commands.arguments.EntityArgument
+import java.util.Locale
+import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands.argument
 import net.minecraft.commands.Commands.literal
-import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.phys.BlockHitResult
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
@@ -20,12 +22,18 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                 .then(argument("player", EntityArgument.player())
                     .requires { it.hasPermission(2) }
                     .executes(::showTargetBalance)
+                    .then(literal("get").executes(::showTargetBalance))
                     .then(literal("set").then(argument("coins", StringArgumentType.greedyString())
                         .executes(::setBalance)))
                     .then(literal("add").then(argument("coins", StringArgumentType.greedyString())
                         .executes { adjustBalance(it, false) }))
                     .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
                         .executes { adjustBalance(it, true) }))))
+            .then(literal("rates").executes(::showRates))
+            .then(literal("shop")
+                .then(literal("offer").then(argument("slot", IntegerArgumentType.integer(1, 9))
+                    .then(argument("coins", StringArgumentType.greedyString()).executes(::configureShop))))
+                .then(literal("fund").then(argument("coins", StringArgumentType.greedyString()).executes(::fundShop))))
             .then(literal("bag")
                 .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag)))
             .then(literal("withdraw")
@@ -39,6 +47,16 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                     .then(argument("coins", StringArgumentType.greedyString()).executes(::pay)))))
     }
 
+    private fun showRates(context: CommandContext<CommandSourceStack>): Int {
+        val rates = CurrencyValues.current()
+        val ratios = listOf(rates.bronzePerIron, rates.ironPerSilver, rates.silverPerGold, rates.goldPerPlatinum)
+        for (index in ratios.indices) {
+            val lower = Component.translatable("item.coinage." + CoinTier.entries[index].name.lowercase(Locale.ROOT) + "_coin")
+            val higher = Component.translatable("item.coinage." + CoinTier.entries[index + 1].name.lowercase(Locale.ROOT) + "_coin")
+            context.source.sendSuccess({ Component.translatable("command.coinage.rate", ratios[index], lower, higher) }, false)
+        }
+        return 1
+    }
     private fun showOwnBalance(context: CommandContext<CommandSourceStack>): Int {
         val source = context.source
         val player = source.playerOrException
@@ -107,13 +125,36 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         return 1
     }
 
+    private fun targetShop(context: CommandContext<CommandSourceStack>): ShopEntity {
+        val player = context.source.playerOrException
+        val hit = player.pick(6.0, 0f, false) as? BlockHitResult
+            ?: throw paymentFailed.create()
+        return player.level().getBlockEntity(hit.blockPos) as? ShopEntity ?: throw paymentFailed.create()
+    }
+
+    private fun configureShop(context: CommandContext<CommandSourceStack>): Int {
+        val shop = targetShop(context)
+        if (!shop.configure(context.source.playerOrException,
+                IntegerArgumentType.getInteger(context, "slot") - 1, coinAmount(context, 0))) {
+            throw paymentFailed.create()
+        }
+        context.source.sendSuccess({ Component.translatable("command.coinage.shop.configured") }, false)
+        return 1
+    }
+
+    private fun fundShop(context: CommandContext<CommandSourceStack>): Int {
+        if (!targetShop(context).fund(context.source.playerOrException, coinAmount(context, 1))) throw paymentFailed.create()
+        context.source.sendSuccess({ Component.translatable("command.coinage.shop.funded") }, false)
+        return 1
+    }
+
     private fun makeBag(context: CommandContext<CommandSourceStack>): Int {
         val player = context.source.playerOrException
         val amount = coinAmount(context, 1)
         val ledger = PurseLedger.get(context.source.server)
         if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
         val bag = MoneyBagItem.create(amount)
-        if (!player.inventory.add(bag)) throw paymentFailed.create()
+        if (!InventoryTransactions.insert(player.inventory, bag)) throw paymentFailed.create()
         ledger.setBalance(player.uuid, ledger.balance(player.uuid) - amount)
         player.containerMenu.broadcastChanges()
         return 1
@@ -126,7 +167,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
         var remaining = amount
         val stacks = mutableListOf<ItemStack>()
-        for (coin in listOf(CoinageItems.gold, CoinageItems.silver, CoinageItems.bronze)) {
+        for (coin in CoinageItems.descending) {
             var count = remaining / coin.denomination
             remaining %= coin.denomination
             if (count > 3564) throw invalidAmount.create()
@@ -137,9 +178,9 @@ internal class EconomyCommands(private val config: EconomyConfig) {
             }
         }
         val inventory = player.inventory
-        val snapshot = (0 until inventory.containerSize).map { inventory.getItem(it).copy() }
-        if (!stacks.all { inventory.add(it) }) {
-            snapshot.forEachIndexed { index, stack -> inventory.setItem(index, stack) }
+        val snapshot = InventoryTransactions.snapshot(inventory)
+        if (!stacks.all { InventoryTransactions.insert(inventory, it) }) {
+            InventoryTransactions.restore(inventory, snapshot)
             player.containerMenu.broadcastChanges()
             throw paymentFailed.create()
         }

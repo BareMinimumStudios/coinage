@@ -7,6 +7,8 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.event.TagsUpdatedEvent
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.registries.RegisterEvent
 
 @Mod(MOD_ID)
@@ -37,7 +39,31 @@ class CoinageNeoForge(modBus: IEventBus) {
                 registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, "piggy_bank"), CoinageBlocks.piggyType)
             }
         }
-        val commands = EconomyCommands(EconomyConfig.register())
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.BLOCK) { registry ->
+                CoinageBlocks.shops.forEach { (name, block) ->
+                    registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, name), block)
+                }
+            }
+            event.register(Registries.ITEM) { registry ->
+                CoinageBlocks.shopItems.forEach { (name, item) ->
+                    registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item)
+                }
+            }
+            event.register(Registries.BLOCK_ENTITY_TYPE) { registry ->
+                CoinageBlocks.shopType = BlockEntityType.Builder.of(
+                    ::ShopEntity, *CoinageBlocks.shops.values.toTypedArray()
+                ).build(null)
+                registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, "shop"), CoinageBlocks.shopType)
+            }
+        }
+        val config = EconomyConfig.register()
+        val commands = EconomyCommands(config)
+        val events = EconomyEvents(config)
+        NeoForge.EVENT_BUS.addListener { event: LivingDeathEvent ->
+            if (!event.isCanceled) events.onDeath(event.entity, event.source)
+        }
+        NeoForge.EVENT_BUS.addListener { event: TagsUpdatedEvent -> events.clearDropCache() }
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> commands.register(event.dispatcher) }
     }
 }

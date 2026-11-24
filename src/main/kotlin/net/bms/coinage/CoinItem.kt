@@ -1,14 +1,21 @@
 package net.bms.coinage
 
+import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
-class CoinItem(val denomination: Long) : Item(Properties().stacksTo(99)) {
+class CoinItem(val tier: CoinTier) : Item(Properties().stacksTo(99)) {
+    val denomination: Long get() = CurrencyValues.current().value(tier)
+
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, flag: TooltipFlag) {
+        tooltip.add(Component.translatable("tooltip.coinage.value", denomination))
+    }
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         if (player is ServerPlayer) {
@@ -24,9 +31,19 @@ class CoinItem(val denomination: Long) : Item(Properties().stacksTo(99)) {
 }
 
 object CoinageItems {
-    val bronze = CoinItem(1)
-    val silver = CoinItem(100)
-    val gold = CoinItem(10_000)
+    val bronze = CoinItem(CoinTier.BRONZE)
+    val iron = CoinItem(CoinTier.IRON)
+    val silver = CoinItem(CoinTier.SILVER)
+    val gold = CoinItem(CoinTier.GOLD)
+    val platinum = CoinItem(CoinTier.PLATINUM)
+    val descending = listOf(platinum, gold, silver, iron, bronze)
     val moneyBag = MoneyBagItem()
-    val entries: Map<String, Item> = linkedMapOf("money_bag" to moneyBag, "bronze_coin" to bronze, "silver_coin" to silver, "gold_coin" to gold)
+    val entries: Map<String, Item> = linkedMapOf(
+        "money_bag" to moneyBag,
+        "bronze_coin" to bronze,
+        "iron_coin" to iron,
+        "silver_coin" to silver,
+        "gold_coin" to gold,
+        "platinum_coin" to platinum
+    )
 }

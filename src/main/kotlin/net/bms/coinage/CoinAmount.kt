@@ -1,5 +1,6 @@
 package net.bms.coinage
 
+import java.util.Locale
 import redempt.crunch.Crunch
 
 internal object CoinAmount {
@@ -8,7 +9,10 @@ internal object CoinAmount {
     private val integers = Regex("[0-9]+")
 
     fun parse(input: String, minimum: Long): Long? {
-        val value = input.trim()
+        val rates = CurrencyValues.current()
+        val value = input.trim().replace(Regex("""\b(bronze|iron|silver|gold|platinum)\b""", RegexOption.IGNORE_CASE)) { match ->
+            rates.value(CoinTier.valueOf(match.value.uppercase(Locale.ROOT))).toString()
+        }
         value.toLongOrNull()?.let { return it.takeIf { amount -> amount >= minimum } }
         if (!expression.matches(value)) return null
 

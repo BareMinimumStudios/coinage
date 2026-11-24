@@ -28,5 +28,22 @@
   "block.coinage.brown_piggy_bank": "Brown Piggy Bank",
   "block.coinage.green_piggy_bank": "Green Piggy Bank",
   "block.coinage.red_piggy_bank": "Red Piggy Bank",
-  "block.coinage.black_piggy_bank": "Black Piggy Bank"
+  "block.coinage.black_piggy_bank": "Black Piggy Bank",
+  "container.coinage.shop": "Shop",
+  "container.coinage.pawn_shop": "Pawn Shop",
+  "gui.coinage.offer": "%s \u2014 %s coins",
+  "gui.coinage.collect": "Collect %s coins",
+  "gui.coinage.shop_help": "Set offers with /coinage shop offer <1-9> <price> while holding the item",
+  "gui.coinage.trade_failed": "Trade failed. Check stock, purse funds, and inventory space.",
+  "command.coinage.shop.configured": "Shop offer updated.",
+  "command.coinage.shop.funded": "Coins transferred into the shop.",
+  "block.coinage.shop": "Shop",
+  "block.coinage.pawn_shop": "Pawn Shop",
+  "block.coinage.inexhaustible_shop": "Inexhaustible Shop",
+  "block.coinage.inexhaustible_pawn_shop": "Inexhaustible Pawn Shop",
+  "item.coinage.iron_coin": "Iron Coin",
+  "item.coinage.platinum_coin": "Platinum Coin",
+  "command.coinage.rate": "%s %s = 1 %s",
+  "tooltip.coinage.value": "Worth %s bronze coins",
+  "itemGroup.coinage": "Coinage"
 }
