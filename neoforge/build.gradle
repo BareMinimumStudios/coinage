@@ -6,7 +6,7 @@ neoForge {
         server { server(); programArgument '--nogui' }
     }
     mods {
-        numismatic_overhaul { sourceSet sourceSets.main }
+        coinage { sourceSet sourceSets.main }
     }
 }
 dependencies {

@@ -1,4 +1,4 @@
-package net.bms.numismatic_overhaul
+package net.bms.coinage
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull

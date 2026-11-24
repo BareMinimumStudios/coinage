@@ -1,4 +1,4 @@
-package net.bms.numismatic_overhaul
+package net.bms.coinage
 
 import redempt.crunch.Crunch
 

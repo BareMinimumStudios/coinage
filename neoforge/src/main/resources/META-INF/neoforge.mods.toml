@@ -3,25 +3,25 @@ loaderVersion="[5.11,)"
 license="BML-1.0"
 
 [[mods]]
-modId="numismatic_overhaul"
+modId="coinage"
 version="${version}"
-displayName="Numismatic Overhaul"
+displayName="Coinage"
 authors="pokesmells, Bare Minimum Studios"
 description="Persistent player purses and economy administration."
 
-[[dependencies.numismatic_overhaul]]
+[[dependencies.coinage]]
 modId="neoforge"
 type="required"
 versionRange="[21.1.266,)"
 side="BOTH"
 
-[[dependencies.numismatic_overhaul]]
+[[dependencies.coinage]]
 modId="minecraft"
 type="required"
 versionRange="[1.21.1]"
 side="BOTH"
 
-[[dependencies.numismatic_overhaul]]
+[[dependencies.coinage]]
 modId="fzzy_config"
 type="required"
 versionRange="[0.7.7,)"

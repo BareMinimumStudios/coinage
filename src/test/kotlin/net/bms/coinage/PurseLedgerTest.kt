@@ -1,4 +1,4 @@
-package net.bms.numismatic_overhaul
+package net.bms.coinage
 
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag

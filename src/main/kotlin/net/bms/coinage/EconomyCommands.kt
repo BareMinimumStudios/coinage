@@ -1,4 +1,4 @@
-package net.bms.numismatic_overhaul
+package net.bms.coinage
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
@@ -14,13 +14,17 @@ import net.minecraft.server.level.ServerPlayer
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
-        dispatcher.register(literal("numismatic")
+        dispatcher.register(literal("coinage")
             .then(literal("balance").executes(::showOwnBalance)
                 .then(argument("player", EntityArgument.player())
                     .requires { it.hasPermission(2) }
                     .executes(::showTargetBalance)
                     .then(literal("set").then(argument("coins", StringArgumentType.greedyString())
-                        .executes(::setBalance)))))
+                        .executes(::setBalance)))
+                    .then(literal("add").then(argument("coins", StringArgumentType.greedyString())
+                        .executes { adjustBalance(it, false) }))
+                    .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
+                        .executes { adjustBalance(it, true) }))))
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
                 .then(argument("limit", IntegerArgumentType.integer(1, 100))
@@ -34,7 +38,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val source = context.source
         val player = source.playerOrException
         val balance = PurseLedger.get(source.server).balance(player.uuid)
-        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.balance", balance) }, false)
+        source.sendSuccess({ Component.translatable("command.coinage.balance", balance) }, false)
         return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
@@ -42,7 +46,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val source = context.source
         val player = EntityArgument.getPlayer(context, "player")
         val balance = PurseLedger.get(source.server).balance(player.uuid)
-        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.balance.other", player.displayName, balance) }, false)
+        source.sendSuccess({ Component.translatable("command.coinage.balance.other", player.displayName, balance) }, false)
         return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
@@ -52,18 +56,33 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         return showTargetBalance(context)
     }
 
+    private fun adjustBalance(context: CommandContext<CommandSourceStack>, subtract: Boolean): Int {
+        val player = EntityArgument.getPlayer(context, "player")
+        val ledger = PurseLedger.get(context.source.server)
+        val amount = coinAmount(context, 0)
+        val value = try {
+            if (subtract) Math.subtractExact(ledger.balance(player.uuid), amount)
+            else Math.addExact(ledger.balance(player.uuid), amount)
+        } catch (_: ArithmeticException) {
+            throw invalidAmount.create()
+        }
+        if (value < 0) throw invalidAmount.create()
+        ledger.setBalance(player.uuid, value)
+        return showTargetBalance(context)
+    }
+
     private fun showRichest(context: CommandContext<CommandSourceStack>, limit: Int): Int {
         val source = context.source
         val server = source.server
         val records = PurseLedger.get(server).richest(limit)
         if (records.isEmpty()) {
-            source.sendSuccess({ Component.translatable("command.numismatic_overhaul.top.empty") }, false)
+            source.sendSuccess({ Component.translatable("command.coinage.top.empty") }, false)
             return 0
         }
         records.forEachIndexed { index, (id, balance) ->
             val name = server.playerList.getPlayer(id)?.displayName
                 ?: Component.literal(server.profileCache?.get(id)?.orElse(null)?.name ?: id.toString())
-            source.sendSuccess({ Component.translatable("command.numismatic_overhaul.top.entry", index + 1, name, balance) }, false)
+            source.sendSuccess({ Component.translatable("command.coinage.top.entry", index + 1, name, balance) }, false)
         }
         return records.size
     }
@@ -78,8 +97,8 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         ) {
             throw paymentFailed.create()
         }
-        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.payment.sent", amount, recipient.displayName) }, false)
-        recipient.sendSystemMessage(Component.translatable("command.numismatic_overhaul.payment.received", amount, sender.displayName))
+        source.sendSuccess({ Component.translatable("command.coinage.payment.sent", amount, recipient.displayName) }, false)
+        recipient.sendSystemMessage(Component.translatable("command.coinage.payment.received", amount, sender.displayName))
         return 1
     }
 
@@ -89,7 +108,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
     }
 
     private companion object {
-        val invalidAmount = SimpleCommandExceptionType(Component.translatable("command.numismatic_overhaul.amount.invalid"))
-        val paymentFailed = SimpleCommandExceptionType(Component.translatable("command.numismatic_overhaul.payment.failed"))
+        val invalidAmount = SimpleCommandExceptionType(Component.translatable("command.coinage.amount.invalid"))
+        val paymentFailed = SimpleCommandExceptionType(Component.translatable("command.coinage.payment.failed"))
     }
 }

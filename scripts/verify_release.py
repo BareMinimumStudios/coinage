@@ -6,7 +6,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 
-mod_id = "numismatic_overhaul"
+mod_id = "coinage"
 studio = "pokesmells, Bare Minimum Studios"
 metadata_paths = {"fabric": "fabric.mod.json", "neoforge": "META-INF/neoforge.mods.toml"}
 
@@ -14,7 +14,7 @@ metadata_paths = {"fabric": "fabric.mod.json", "neoforge": "META-INF/neoforge.mo
 def verify(loader):
     directory = Path(loader, "build", "libs")
     jars = [
-        path for path in directory.glob(f"numismatic-overhaul-{loader}-*.jar")
+        path for path in directory.glob(f"coinage-{loader}-*.jar")
         if not path.stem.endswith(("-dev", "-sources", "-all", "-unshaded"))
     ]
     if len(jars) != 1:
@@ -23,9 +23,9 @@ def verify(loader):
         names = set(archive.namelist())
         required = {
             "LICENSE", "LICENSE-Crunch", metadata_paths[loader],
-            "net/bms/numismatic_overhaul/PurseLedger.class",
-            "net/bms/numismatic_overhaul/internal/crunch/Crunch.class",
-            "net/bms/numismatic_overhaul/EconomyConfig.class",
+            "net/bms/coinage/PurseLedger.class",
+            "net/bms/coinage/internal/crunch/Crunch.class",
+            "net/bms/coinage/EconomyConfig.class",
         }
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")

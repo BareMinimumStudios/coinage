@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "numismatic_overhaul",
+  "id": "coinage",
   "version": "${version}",
-  "name": "Numismatic Overhaul",
+  "name": "Coinage",
   "description": "Persistent player purses and economy administration.",
   "authors": ["pokesmells", "Bare Minimum Studios"],
   "license": "BML-1.0",
   "entrypoints": {
-    "main": [{"adapter": "kotlin", "value": "net.bms.numismatic_overhaul.NumismaticFabric"}]
+    "main": [{"adapter": "kotlin", "value": "net.bms.coinage.CoinageFabric"}]
   },
   "depends": {
     "fabricloader": ">=0.19.5",

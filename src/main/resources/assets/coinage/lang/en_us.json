@@ -1,0 +1,10 @@
+{
+  "command.coinage.balance": "Purse balance: %s coins",
+  "command.coinage.balance.other": "%s has %s coins",
+  "command.coinage.top.empty": "Every purse is empty.",
+  "command.coinage.top.entry": "%s. %s has %s coins",
+  "command.coinage.amount.invalid": "Enter a valid coin amount or an expression using +, -, and *.",
+  "command.coinage.payment.sent": "Sent %s coins to %s",
+  "command.coinage.payment.received": "Received %s coins from %s",
+  "command.coinage.payment.failed": "Payment failed. Check the recipient and both purse balances."
+}

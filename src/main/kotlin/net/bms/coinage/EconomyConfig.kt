@@ -1,4 +1,4 @@
-package net.bms.numismatic_overhaul
+package net.bms.coinage
 
 import me.fzzyhmstrs.fzzy_config.annotations.RootConfig
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
@@ -18,4 +18,4 @@ class EconomyConfig : Config(ResourceLocation.fromNamespaceAndPath(MOD_ID, "econ
     }
 }
 
-const val MOD_ID = "numismatic_overhaul"
+const val MOD_ID = "coinage"
