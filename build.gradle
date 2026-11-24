@@ -1,81 +1,61 @@
-//file:noinspection GradlePackageVersionRange
 plugins {
-    id 'fabric-loom' version '1.10-SNAPSHOT'
-    id 'maven-publish'
+    id 'base'
+    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}" apply false
+    id 'fabric-loom' version "${loom_version}" apply false
+    id 'net.neoforged.moddev' version "${moddev_version}" apply false
+    id 'dev.mixinmcp.decompile' version '1.5.0' apply false
 }
 
-version = "${project.mod_version}+${project.minecraft_base_version}"
-group = project.maven_group
-
-repositories {
-    maven   { url = "https://maven.terraformersmc.com/" }
-    maven   { url = "https://maven.ladysnake.org/releases" }
-    maven   { url = "https://maven.shedaniel.me/" }
-    maven   { url = "https://maven.wispforest.io/" }
-    maven   { url = "https://api.modrinth.com/maven/" }
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
 }
 
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-    // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-    modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
-
-    // REI
-    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
-    modLocalRuntime "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
-    modLocalRuntime "dev.architectury:architectury-fabric:8.1.73"
-
-    // Stacc
-    //modLocalRuntime include("maven.modrinth:stacc-api:${project.stacc_version}")
-
-    // ModMenu
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-
-    // oωo
-    modImplementation annotationProcessor("io.wispforest:owo-lib:${project.owo_version}")
-    modCompileOnly include("io.wispforest:owo-sentinel:${project.owo_version}")
-}
-
-base {
-    archivesName = project.archives_base_name
-}
-
-processResources {
-    inputs.property "version", project.version
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+subprojects {
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    repositories {
+        mavenCentral()
+        maven { url = 'https://api.modrinth.com/maven' }
+        maven { url = 'https://maven.fzzyhmstrs.me/' }
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
+    }
+    base { archivesName = "${rootProject.archives_base_name}-${project.name}" }
+    java {
+        toolchain { languageVersion = JavaLanguageVersion.of(21) }
+        withSourcesJar()
+    }
+    kotlin { jvmToolchain(21) }
+    sourceSets {
+        main {
+            java.srcDir rootProject.file('src/main/java')
+            kotlin.srcDir rootProject.file('src/main/kotlin')
+            resources.srcDir rootProject.file('src/main/resources')
+        }
+        if (project.name == 'fabric') test { kotlin.srcDir rootProject.file('src/test/kotlin') }
+    }
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 21
+        options.encoding = 'UTF-8'
+    }
+    dependencies {
+        testImplementation platform('org.junit:junit-bom:5.14.0')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+    tasks.withType(Test).configureEach { useJUnitPlatform() }
+    tasks.withType(ProcessResources).configureEach {
+        filteringCharset = 'UTF-8'
+        inputs.property 'version', project.version
+        filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
+            expand version: project.version
+        }
+    }
+    tasks.withType(Jar).configureEach {
+        from(rootProject.file('LICENSE'))
     }
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/numismatic-overhaul.accesswidener")
-}
-
-
-tasks.withType(JavaCompile).configureEach {
-    // Minecraft 1.21 upwards uses Java 21.
-    it.options.release = 21
-}
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${base.archivesName.get()}"}
-    }
-}
+tasks.named('build') { dependsOn ':fabric:build', ':neoforge:build' }
+tasks.named('clean') { dependsOn ':fabric:clean', ':neoforge:clean' }

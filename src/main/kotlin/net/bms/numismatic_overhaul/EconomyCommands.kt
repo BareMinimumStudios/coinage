@@ -1,0 +1,89 @@
+package net.bms.numismatic_overhaul
+
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.LongArgumentType
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands.argument
+import net.minecraft.commands.Commands.literal
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerPlayer
+
+internal class EconomyCommands(private val config: EconomyConfig) {
+    fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
+        dispatcher.register(literal("numismatic")
+            .then(literal("balance").executes(::showOwnBalance)
+                .then(argument("player", EntityArgument.player())
+                    .requires { it.hasPermission(2) }
+                    .executes(::showTargetBalance)
+                    .then(literal("set").then(argument("coins", LongArgumentType.longArg(0))
+                        .executes(::setBalance)))))
+            .then(literal("top").requires { it.hasPermission(2) }
+                .executes { showRichest(it, 10) }
+                .then(argument("limit", IntegerArgumentType.integer(1, 100))
+                    .executes { showRichest(it, IntegerArgumentType.getInteger(it, "limit")) }))
+            .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
+                .then(argument("player", EntityArgument.player())
+                    .then(argument("coins", LongArgumentType.longArg(1)).executes(::pay)))))
+    }
+
+    private fun showOwnBalance(context: CommandContext<CommandSourceStack>): Int {
+        val source = context.source
+        val player = source.playerOrException
+        val balance = PurseLedger.get(source.server).balance(player.uuid)
+        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.balance", balance) }, false)
+        return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    private fun showTargetBalance(context: CommandContext<CommandSourceStack>): Int {
+        val source = context.source
+        val player = EntityArgument.getPlayer(context, "player")
+        val balance = PurseLedger.get(source.server).balance(player.uuid)
+        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.balance.other", player.displayName, balance) }, false)
+        return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    private fun setBalance(context: CommandContext<CommandSourceStack>): Int {
+        val player = EntityArgument.getPlayer(context, "player")
+        PurseLedger.get(context.source.server).setBalance(player.uuid, LongArgumentType.getLong(context, "coins"))
+        return showTargetBalance(context)
+    }
+
+    private fun showRichest(context: CommandContext<CommandSourceStack>, limit: Int): Int {
+        val source = context.source
+        val server = source.server
+        val records = PurseLedger.get(server).richest(limit)
+        if (records.isEmpty()) {
+            source.sendSuccess({ Component.translatable("command.numismatic_overhaul.top.empty") }, false)
+            return 0
+        }
+        records.forEachIndexed { index, (id, balance) ->
+            val name = server.playerList.getPlayer(id)?.displayName
+                ?: Component.literal(server.profileCache?.get(id)?.orElse(null)?.name ?: id.toString())
+            source.sendSuccess({ Component.translatable("command.numismatic_overhaul.top.entry", index + 1, name, balance) }, false)
+        }
+        return records.size
+    }
+
+    private fun pay(context: CommandContext<CommandSourceStack>): Int {
+        val source = context.source
+        val sender = source.playerOrException
+        val recipient = EntityArgument.getPlayer(context, "player")
+        val amount = LongArgumentType.getLong(context, "coins")
+        if (!config.playerPayments || sender.uuid == recipient.uuid ||
+            !PurseLedger.get(source.server).transfer(sender.uuid, recipient.uuid, amount)
+        ) {
+            throw paymentFailed.create()
+        }
+        source.sendSuccess({ Component.translatable("command.numismatic_overhaul.payment.sent", amount, recipient.displayName) }, false)
+        recipient.sendSystemMessage(Component.translatable("command.numismatic_overhaul.payment.received", amount, sender.displayName))
+        return 1
+    }
+
+    private companion object {
+        val paymentFailed = SimpleCommandExceptionType(Component.translatable("command.numismatic_overhaul.payment.failed"))
+    }
+}

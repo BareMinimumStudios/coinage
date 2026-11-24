@@ -1,0 +1,28 @@
+modLoader="kotlinforforge"
+loaderVersion="[5.11,)"
+license="BML-1.0"
+
+[[mods]]
+modId="numismatic_overhaul"
+version="${version}"
+displayName="Numismatic Overhaul"
+authors="pokesmells, Bare Minimum Studios"
+description="Persistent player purses and economy administration."
+
+[[dependencies.numismatic_overhaul]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.266,)"
+side="BOTH"
+
+[[dependencies.numismatic_overhaul]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+side="BOTH"
+
+[[dependencies.numismatic_overhaul]]
+modId="fzzy_config"
+type="required"
+versionRange="[0.7.7,)"
+side="BOTH"
