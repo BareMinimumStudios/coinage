@@ -25,6 +25,8 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                         .executes { adjustBalance(it, false) }))
                     .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
                         .executes { adjustBalance(it, true) }))))
+            .then(literal("withdraw")
+                .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw)))
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
                 .then(argument("limit", IntegerArgumentType.integer(1, 100))
@@ -99,6 +101,35 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         }
         source.sendSuccess({ Component.translatable("command.coinage.payment.sent", amount, recipient.displayName) }, false)
         recipient.sendSystemMessage(Component.translatable("command.coinage.payment.received", amount, sender.displayName))
+        return 1
+    }
+
+    private fun withdraw(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val amount = coinAmount(context, 1)
+        val ledger = PurseLedger.get(context.source.server)
+        if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
+        var remaining = amount
+        val stacks = mutableListOf<net.minecraft.world.item.ItemStack>()
+        for (coin in listOf(CoinageItems.gold, CoinageItems.silver, CoinageItems.bronze)) {
+            var count = remaining / coin.denomination
+            remaining %= coin.denomination
+            if (count > 3564) throw invalidAmount.create()
+            while (count > 0) {
+                val size = minOf(count, 99).toInt()
+                stacks.add(net.minecraft.world.item.ItemStack(coin, size))
+                count -= size
+            }
+        }
+        val inventory = player.inventory
+        val snapshot = (0 until inventory.containerSize).map { inventory.getItem(it).copy() }
+        if (!stacks.all { inventory.add(it) }) {
+            snapshot.forEachIndexed { index, stack -> inventory.setItem(index, stack) }
+            player.containerMenu.broadcastChanges()
+            throw paymentFailed.create()
+        }
+        ledger.setBalance(player.uuid, ledger.balance(player.uuid) - amount)
+        player.containerMenu.broadcastChanges()
         return 1
     }
 
