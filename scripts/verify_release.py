@@ -12,7 +12,8 @@ metadata_paths = {"fabric": "fabric.mod.json", "neoforge": "META-INF/neoforge.mo
 
 
 def verify(loader):
-    directory = Path(loader, "build", "libs")
+    target = os.getenv("COINAGE_TARGET", "1.21.1")
+    directory = Path("build", target, loader, "libs")
     jars = [
         path for path in directory.glob(f"coinage-{loader}-*.jar")
         if not path.stem.endswith(("-dev", "-sources", "-all", "-unshaded"))

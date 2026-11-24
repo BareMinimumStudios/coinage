@@ -1,20 +1,30 @@
 plugins {
     id 'base'
     id 'com.gradleup.shadow' version '9.3.1' apply false
-    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}" apply false
-    id 'fabric-loom' version "${loom_version}" apply false
-    id 'net.neoforged.moddev' version "${moddev_version}" apply false
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21' apply false
+    id 'net.fabricmc.fabric-loom-remap' version '1.17.21' apply false
+    id 'net.fabricmc.fabric-loom' version '1.17.21' apply false
+    id 'net.neoforged.moddev' version '2.0.148' apply false
     id 'dev.mixinmcp.decompile' version '1.5.0' apply false
 }
 
-allprojects {
-    group = rootProject.maven_group
-    version = rootProject.mod_version
-}
+def selectedTarget = providers.gradleProperty('coinageTarget').getOrElse('1.21.1')
+def profileFile = file("targets/${selectedTarget}.properties")
+if (!profileFile.isFile()) throw new GradleException("Unknown Minecraft target ${selectedTarget}")
+def pins = new Properties()
+profileFile.withReader('UTF-8') { pins.load(it) }
+ext.targetPins = pins
+ext.modernTarget = selectedTarget == '26.3'
+ext.targetJava = pins.java_version.toInteger()
 
+allprojects {
+    group = 'net.bms'
+    version = pins.mod_version
+}
 subprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'com.gradleup.shadow'
+    layout.buildDirectory.set(rootProject.layout.buildDirectory.dir("${selectedTarget}/${project.name}"))
     repositories {
         mavenCentral()
         exclusiveContent {
@@ -27,22 +37,49 @@ subprojects {
         maven { url = 'https://maven.neoforged.net/releases' }
         maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
     }
-    base { archivesName = "${rootProject.archives_base_name}-${project.name}" }
+    configurations.configureEach { exclude group: 'com.terraformersmc', module: 'modmenu' }
+    base { archivesName = "coinage-${project.name}" }
     java {
-        toolchain { languageVersion = JavaLanguageVersion.of(21) }
+        toolchain { languageVersion = JavaLanguageVersion.of(rootProject.targetJava) }
         withSourcesJar()
     }
-    kotlin { jvmToolchain(21) }
-    sourceSets {
-        main {
-            java.srcDir rootProject.file('src/main/java')
-            kotlin.srcDir rootProject.file('src/main/kotlin')
-            resources.srcDir rootProject.file('src/main/resources')
+    kotlin { jvmToolchain(rootProject.targetJava) }
+
+    def kotlinRoots = [rootProject.file('src/main/kotlin'), project.file('src/main/kotlin')]
+    def javaRoots = [rootProject.file('src/main/java'), project.file('src/main/java')]
+    if (!rootProject.modernTarget) javaRoots += rootProject.file('src/1.21.1/java')
+    def resourceRoots = [rootProject.file('src/main/resources'), project.file('src/main/resources')]
+    def testRoots = [rootProject.file('src/test/kotlin')]
+    if (rootProject.modernTarget) {
+        kotlinRoots += [rootProject.file('src/26.3/kotlin'), project.file('src/26.3/kotlin')]
+        javaRoots += [rootProject.file('src/26.3/java'), project.file('src/26.3/java')]
+        resourceRoots += [rootProject.file('src/26.3/resources'), project.file('src/26.3/resources')]
+        testRoots += rootProject.file('src/26.3/test/kotlin')
+    }
+    def replaced = { roots, entry ->
+        roots.withIndex().any { root, index ->
+            entry.file.toPath().startsWith(root.toPath()) &&
+                roots.drop(index + 1).any { replacement -> new File(replacement, entry.relativePath.pathString).isFile() }
         }
-        if (project.name == 'fabric') test { kotlin.srcDir rootProject.file('src/test/kotlin') }
+    }
+    sourceSets.main {
+        java.setSrcDirs(javaRoots)
+        java.exclude { replaced(javaRoots, it) }
+        kotlin.setSrcDirs(kotlinRoots)
+        kotlin.exclude { replaced(kotlinRoots, it) }
+        resources.setSrcDirs(resourceRoots)
+        resources.exclude { replaced(resourceRoots, it) }
+    }
+    if (project.name == 'fabric') {
+        sourceSets.test.kotlin.setSrcDirs(testRoots)
+        sourceSets.test.kotlin.exclude { replaced(testRoots, it) }
+    }
+    tasks.named('compileKotlin') { source(sourceSets.main.java) }
+    tasks.named('sourcesJar') {
+        exclude { entry -> replaced(kotlinRoots + javaRoots, entry) }
     }
     tasks.withType(JavaCompile).configureEach {
-        options.release = 21
+        options.release = rootProject.targetJava
         options.encoding = 'UTF-8'
     }
     configurations {
@@ -50,7 +87,6 @@ subprojects {
         implementation.extendsFrom(expressionEngine)
     }
     dependencies {
-        // boxbeam/Crunch rewrite at 0c7d52fc1926960842d11d196832b058580a00b4.
         expressionEngine 'com.github.boxbeam:Crunch:0c7d52fc19'
         testImplementation platform('org.junit:junit-bom:5.14.0')
         testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -59,10 +95,17 @@ subprojects {
     tasks.withType(Test).configureEach { useJUnitPlatform() }
     tasks.withType(ProcessResources).configureEach {
         filteringCharset = 'UTF-8'
-        inputs.property 'version', project.version
-        filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
-            expand version: project.version
-        }
+        def values = [
+            version: project.version,
+            minecraftVersion: pins.minecraft_version,
+            javaVersion: pins.java_version,
+            javaCompatibility: "JAVA_${pins.java_version}",
+            kotlinLoaderVersion: pins.kotlin_loader_range,
+            neoForgeVersion: pins.neoforge_version,
+            fabricKotlinVersion: pins.fabric_kotlin_version
+        ]
+        inputs.properties(values)
+        filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml', 'coinage.mixins.json']) { expand(values) }
     }
     tasks.named('shadowJar') {
         configurations = [project.configurations.expressionEngine]
@@ -73,8 +116,9 @@ subprojects {
         from(rootProject.file('LICENSE'))
         from(rootProject.file('LICENSE-UPSTREAM'))
         from(rootProject.file('NOTICE.md'))
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
     }
 }
-
 tasks.named('build') { dependsOn ':fabric:build', ':neoforge:build' }
 tasks.named('clean') { dependsOn ':fabric:clean', ':neoforge:clean' }

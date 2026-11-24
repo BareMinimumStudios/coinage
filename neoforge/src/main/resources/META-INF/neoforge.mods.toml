@@ -1,5 +1,5 @@
 modLoader="kotlinforforge"
-loaderVersion="[5.11,)"
+loaderVersion="[${kotlinLoaderVersion},)"
 license="BML-1.0"
 
 [[mods]]
@@ -12,13 +12,13 @@ description="Persistent player purses and economy administration."
 [[dependencies.coinage]]
 modId="neoforge"
 type="required"
-versionRange="[21.1.266,)"
+versionRange="[${neoForgeVersion},)"
 side="BOTH"
 
 [[dependencies.coinage]]
 modId="minecraft"
 type="required"
-versionRange="[1.21.1]"
+versionRange="[${minecraftVersion}]"
 side="BOTH"
 
 [[dependencies.coinage]]

@@ -1,0 +1,87 @@
+package net.bms.coinage
+
+import net.minecraft.world.item.ItemStack
+
+import net.minecraft.world.item.CreativeModeTab
+
+import net.minecraft.network.chat.Component
+
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.common.Mod
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.event.TagsUpdatedEvent
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
+import net.neoforged.neoforge.registries.RegisterEvent
+
+@Mod(MOD_ID)
+class CoinageNeoForge(modBus: IEventBus) {
+    init {
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.ITEM) { registry ->
+                CoinageItems.entries.forEach { (name, item) ->
+                    registry.register(Identifier.fromNamespaceAndPath(MOD_ID, name), item)
+                }
+            }
+        }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.BLOCK) { registry ->
+                CoinageBlocks.piggyBanks.forEach { (name, block) ->
+                    registry.register(Identifier.fromNamespaceAndPath(MOD_ID, name), block)
+                }
+            }
+            event.register(Registries.ITEM) { registry ->
+                CoinageBlocks.items.forEach { (name, item) ->
+                    registry.register(Identifier.fromNamespaceAndPath(MOD_ID, name), item)
+                }
+            }
+            event.register(Registries.BLOCK_ENTITY_TYPE) { registry ->
+                CoinageBlocks.piggyType = BlockEntityType(
+                    ::PiggyBankEntity, CoinageBlocks.piggyBanks.values.toSet()
+                )
+                registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank"), CoinageBlocks.piggyType)
+            }
+        }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.BLOCK) { registry ->
+                CoinageBlocks.shops.forEach { (name, block) ->
+                    registry.register(Identifier.fromNamespaceAndPath(MOD_ID, name), block)
+                }
+            }
+            event.register(Registries.ITEM) { registry ->
+                CoinageBlocks.shopItems.forEach { (name, item) ->
+                    registry.register(Identifier.fromNamespaceAndPath(MOD_ID, name), item)
+                }
+            }
+            event.register(Registries.BLOCK_ENTITY_TYPE) { registry ->
+                CoinageBlocks.shopType = BlockEntityType(
+                    ::ShopEntity, CoinageBlocks.shops.values.toSet()
+                )
+                registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "shop"), CoinageBlocks.shopType)
+            }
+        }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.CREATIVE_MODE_TAB) { registry ->
+                registry.register(
+                    Identifier.fromNamespaceAndPath(MOD_ID, "main"),
+                    CreativeModeTab.builder()
+                        .title(Component.translatable("itemGroup.coinage"))
+                        .icon { ItemStack(CoinageItems.platinum) }
+                        .displayItems { _, output -> CoinageCreative.fill(output) }
+                        .build()
+                )
+            }
+        }
+        val config = EconomyConfig.register()
+        val commands = EconomyCommands(config)
+        val events = EconomyEvents(config)
+        NeoForge.EVENT_BUS.addListener { event: LivingDeathEvent ->
+            if (!event.isCanceled) events.onDeath(event.entity, event.source)
+        }
+        NeoForge.EVENT_BUS.addListener { event: TagsUpdatedEvent -> events.clearDropCache() }
+        NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> commands.register(event.dispatcher) }
+    }
+}

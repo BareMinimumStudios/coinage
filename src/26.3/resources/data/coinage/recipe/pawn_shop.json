@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "BCB",
+    "IPI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "P": "#minecraft:planks",
+    "B": "minecraft:book",
+    "C": "minecraft:chest"
+  },
+  "result": {
+    "id": "coinage:pawn_shop"
+  }
+}

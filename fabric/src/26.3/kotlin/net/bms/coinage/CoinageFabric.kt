@@ -1,0 +1,62 @@
+package net.bms.coinage
+
+import net.minecraft.world.item.ItemStack
+
+import net.minecraft.network.chat.Component
+
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab
+
+import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.block.entity.BlockEntityType
+
+object CoinageFabric : ModInitializer {
+    override fun onInitialize() {
+        CoinageItems.entries.forEach { (name, item) ->
+            Registry.register(
+                BuiltInRegistries.ITEM,
+                Identifier.fromNamespaceAndPath(MOD_ID, name), item
+            )
+        }
+        CoinageBlocks.piggyBanks.forEach { (name, block) ->
+            val id = Identifier.fromNamespaceAndPath(MOD_ID, name)
+            Registry.register(BuiltInRegistries.BLOCK, id, block)
+            Registry.register(BuiltInRegistries.ITEM, id, CoinageBlocks.items.getValue(name))
+        }
+        CoinageBlocks.piggyType = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank"),
+            BlockEntityType(::PiggyBankEntity, CoinageBlocks.piggyBanks.values.toSet())
+        )
+        CoinageBlocks.shops.forEach { (name, block) ->
+            val id = Identifier.fromNamespaceAndPath(MOD_ID, name)
+            Registry.register(BuiltInRegistries.BLOCK, id, block)
+            Registry.register(BuiltInRegistries.ITEM, id, CoinageBlocks.shopItems.getValue(name))
+        }
+        CoinageBlocks.shopType = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE,
+            Identifier.fromNamespaceAndPath(MOD_ID, "shop"),
+            BlockEntityType(::ShopEntity, CoinageBlocks.shops.values.toSet())
+        )
+        Registry.register(
+            BuiltInRegistries.CREATIVE_MODE_TAB,
+            Identifier.fromNamespaceAndPath(MOD_ID, "main"),
+            FabricCreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.coinage"))
+                .icon { ItemStack(CoinageItems.platinum) }
+                .displayItems { _, output -> CoinageCreative.fill(output) }
+                .build()
+        )
+        val config = EconomyConfig.register()
+        val commands = EconomyCommands(config)
+        val events = EconomyEvents(config)
+        ServerLivingEntityEvents.AFTER_DEATH.register(events::onDeath)
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { _, _, success -> if (success) events.clearDropCache() }
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ -> commands.register(dispatcher) }
+    }
+}

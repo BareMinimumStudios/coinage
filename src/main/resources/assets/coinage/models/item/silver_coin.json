@@ -1,1 +1,32 @@
-{"parent": "minecraft:item/generated", "textures": {"layer0": "coinage:item/silver_coin"}}
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "coinage:item/silver_coin"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "coinage:count": 0.09
+      },
+      "model": "coinage:item/silver_coin_0"
+    },
+    {
+      "predicate": {
+        "coinage:count": 0.27
+      },
+      "model": "coinage:item/silver_coin_1"
+    },
+    {
+      "predicate": {
+        "coinage:count": 0.45
+      },
+      "model": "coinage:item/silver_coin_2"
+    },
+    {
+      "predicate": {
+        "coinage:count": 0.63
+      },
+      "model": "coinage:item/silver_coin_3"
+    }
+  ]
+}

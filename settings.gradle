@@ -1,4 +1,10 @@
 pluginManagement {
+    def target = providers.gradleProperty('coinageTarget').getOrElse('1.21.1')
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'org.jetbrains.kotlin.jvm' && target == '26.3') useVersion('2.4.20')
+        }
+    }
     repositories {
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }

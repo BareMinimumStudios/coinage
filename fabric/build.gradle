@@ -1,16 +1,20 @@
-plugins {
-    id 'fabric-loom'
-    id 'dev.mixinmcp.decompile'
-}
-dependencies {
-    minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${rootProject.fabric_kotlin_version}"
-    modImplementation "me.fzzyhmstrs:fzzy_config:${rootProject.fzzy_config_version}"
-}
+apply plugin: rootProject.modernTarget ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
+apply plugin: 'dev.mixinmcp.decompile'
 
-tasks.named('remapJar') {
-    inputFile.set(tasks.named('shadowJar').flatMap { it.archiveFile })
+def pins = rootProject.targetPins
+def dependencyConfiguration = rootProject.modernTarget ? 'implementation' : 'modImplementation'
+dependencies {
+    minecraft "com.mojang:minecraft:${pins.minecraft_version}"
+    if (!rootProject.modernTarget) mappings loom.officialMojangMappings()
+    add(dependencyConfiguration, "net.fabricmc:fabric-loader:${pins.loader_version}")
+    add(dependencyConfiguration, "net.fabricmc.fabric-api:fabric-api:${pins.fabric_api_version}")
+    add(dependencyConfiguration, "net.fabricmc:fabric-language-kotlin:${pins.fabric_kotlin_version}")
+    add(dependencyConfiguration, "me.fzzyhmstrs:fzzy_config:${pins.fzzy_config_version}")
+}
+if (rootProject.modernTarget) {
+    tasks.named('jar') { archiveClassifier.set('unshaded') }
+    tasks.named('shadowJar') { archiveClassifier.set('') }
+    tasks.named('assemble') { dependsOn tasks.named('shadowJar') }
+} else {
+    tasks.named('remapJar') { inputFile.set(tasks.named('shadowJar').flatMap { it.archiveFile }) }
 }
