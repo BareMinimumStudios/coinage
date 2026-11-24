@@ -6,7 +6,17 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "coinage:lime_piggy_bank"
+          "name": "coinage:lime_piggy_bank",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "source": "block_entity",
+              "include": [
+                "minecraft:container",
+                "minecraft:custom_name"
+              ]
+            }
+          ]
         }
       ],
       "conditions": [

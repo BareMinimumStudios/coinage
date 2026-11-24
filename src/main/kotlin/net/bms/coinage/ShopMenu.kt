@@ -43,8 +43,10 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
     private fun updateDisplay() {
         for (slot in 0..8) {
             val item = shop.offers[slot].copy()
-            if (!item.isEmpty) item.set(DataComponents.CUSTOM_NAME,
-                Component.translatable("gui.coinage.offer", shop.offers[slot].hoverName, shop.prices[slot]))
+            if (!item.isEmpty) item.set(
+                DataComponents.CUSTOM_NAME,
+                Component.translatable("gui.coinage.offer", shop.offers[slot].hoverName, shop.prices[slot])
+            )
             display.setItem(slot, item)
         }
         display.setItem(49, ItemStack(Items.GOLD_INGOT).apply {
@@ -62,13 +64,17 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
 
     override fun stillValid(player: Player): Boolean =
         shop.level?.getBlockEntity(shop.blockPos) === shop &&
-            player.distanceToSqr(shop.blockPos.x + .5, shop.blockPos.y + .5, shop.blockPos.z + .5) <= 64
+                player.distanceToSqr(shop.blockPos.x + .5, shop.blockPos.y + .5, shop.blockPos.z + .5) <= 64
 
     override fun clicked(slot: Int, button: Int, type: ClickType, player: Player) {
         if (!stillValid(player)) return
         if (slot in 0..8) {
             if (player is ServerPlayer && type == ClickType.PICKUP && button == 0) {
-                if (!shop.trade(player, slot)) player.displayClientMessage(Component.translatable("gui.coinage.trade_failed"), true)
+                if (!shop.trade(
+                        player,
+                        slot
+                    )
+                ) player.displayClientMessage(Component.translatable("gui.coinage.trade_failed"), true)
                 broadcastChanges()
             }
             return
@@ -89,7 +95,7 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
         val stack = slot.item
         val original = stack.copy()
         val moved = if (index in 9..35) moveItemStackTo(stack, 54, slots.size, true)
-            else moveItemStackTo(stack, 9, 36, false)
+        else moveItemStackTo(stack, 9, 36, false)
         if (!moved) return ItemStack.EMPTY
         if (stack.isEmpty) slot.setByPlayer(ItemStack.EMPTY) else slot.setChanged()
         slot.onTake(player, stack)

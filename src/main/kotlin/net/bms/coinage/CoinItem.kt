@@ -4,18 +4,32 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.entity.SlotAccess
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.inventory.ClickAction
+import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 
-class CoinItem(val tier: CoinTier) : Item(Properties().stacksTo(99)) {
+class CoinItem(val tier: CoinTier) : Item(Properties().stacksTo(100)) {
     val denomination: Long get() = CurrencyValues.current().value(tier)
 
-    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, flag: TooltipFlag) {
+    override fun appendHoverText(
+        stack: ItemStack,
+        context: TooltipContext,
+        tooltip: MutableList<Component>,
+        flag: TooltipFlag
+    ) {
         tooltip.add(Component.translatable("tooltip.coinage.value", denomination))
     }
+
+    override fun overrideOtherStackedOnMe(
+        self: ItemStack, other: ItemStack, slot: Slot,
+        action: ClickAction, player: Player, cursor: SlotAccess
+    ): Boolean = CurrencyInteractions.click(self, other, slot, action, player, cursor)
+
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = player.getItemInHand(hand)
         if (player is ServerPlayer) {

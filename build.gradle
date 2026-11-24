@@ -71,6 +71,8 @@ subprojects {
     }
     tasks.withType(Jar).configureEach {
         from(rootProject.file('LICENSE'))
+        from(rootProject.file('LICENSE-UPSTREAM'))
+        from(rootProject.file('NOTICE.md'))
     }
 }
 

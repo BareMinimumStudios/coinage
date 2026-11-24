@@ -1,7 +1,5 @@
 package net.bms.coinage
 
-
-
 enum class CoinTier {
     BRONZE, IRON, SILVER, GOLD, PLATINUM
 }
@@ -31,8 +29,14 @@ internal object CurrencyValues {
     fun current(): ExchangeRates {
         val config = configuration?.conversion ?: return cached
         if (cached.bronzePerIron != config.bronzePerIron.get() || cached.ironPerSilver != config.ironPerSilver.get() ||
-            cached.silverPerGold != config.silverPerGold.get() || cached.goldPerPlatinum != config.goldPerPlatinum.get()) {
-            cached = ExchangeRates(config.bronzePerIron.get(), config.ironPerSilver.get(), config.silverPerGold.get(), config.goldPerPlatinum.get())
+            cached.silverPerGold != config.silverPerGold.get() || cached.goldPerPlatinum != config.goldPerPlatinum.get()
+        ) {
+            cached = ExchangeRates(
+                config.bronzePerIron.get(),
+                config.ironPerSilver.get(),
+                config.silverPerGold.get(),
+                config.goldPerPlatinum.get()
+            )
         }
         return cached
     }

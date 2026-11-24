@@ -1,7 +1,10 @@
 package net.bms.coinage
 
 import net.minecraft.core.registries.Registries
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
@@ -55,6 +58,18 @@ class CoinageNeoForge(modBus: IEventBus) {
                     ::ShopEntity, *CoinageBlocks.shops.values.toTypedArray()
                 ).build(null)
                 registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, "shop"), CoinageBlocks.shopType)
+            }
+        }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.CREATIVE_MODE_TAB) { registry ->
+                registry.register(
+                    ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
+                    CreativeModeTab.builder()
+                        .title(Component.translatable("itemGroup.coinage"))
+                        .icon { ItemStack(CoinageItems.platinum) }
+                        .displayItems { _, output -> CoinageCreative.fill(output) }
+                        .build()
+                )
             }
         }
         val config = EconomyConfig.register()

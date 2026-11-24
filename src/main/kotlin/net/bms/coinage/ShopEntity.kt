@@ -86,7 +86,11 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             if ((!unlimited && storedCoins < price) || balance > Long.MAX_VALUE - price) return false
             val playerSnapshot = InventoryTransactions.snapshot(player.inventory)
             val stockSnapshot = InventoryTransactions.snapshot(stock)
-            if (!InventoryTransactions.removeMatching(player.inventory, template) || (!unlimited && !InventoryTransactions.insert(stock, template.copy()))) {
+            if (!InventoryTransactions.removeMatching(
+                    player.inventory,
+                    template
+                ) || (!unlimited && !InventoryTransactions.insert(stock, template.copy()))
+            ) {
                 InventoryTransactions.restore(player.inventory, playerSnapshot)
                 InventoryTransactions.restore(stock, stockSnapshot)
                 return false
@@ -97,7 +101,11 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             if (balance < price || storedCoins > Long.MAX_VALUE - price) return false
             val playerSnapshot = InventoryTransactions.snapshot(player.inventory)
             val stockSnapshot = InventoryTransactions.snapshot(stock)
-            if ((!unlimited && !InventoryTransactions.removeMatching(stock, template)) || !InventoryTransactions.insert(player.inventory, template.copy())) {
+            if ((!unlimited && !InventoryTransactions.removeMatching(stock, template)) || !InventoryTransactions.insert(
+                    player.inventory,
+                    template.copy()
+                )
+            ) {
                 InventoryTransactions.restore(player.inventory, playerSnapshot)
                 InventoryTransactions.restore(stock, stockSnapshot)
                 return false
@@ -110,8 +118,11 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         return true
     }
 
-    override fun getDisplayName(): Component = Component.translatable(if (shopBlock.pawn) "container.coinage.pawn_shop" else "container.coinage.shop")
-    override fun createMenu(id: Int, inventory: Inventory, player: Player): AbstractContainerMenu = ShopMenu(id, inventory, this)
+    override fun getDisplayName(): Component =
+        Component.translatable(if (shopBlock.pawn) "container.coinage.pawn_shop" else "container.coinage.shop")
+
+    override fun createMenu(id: Int, inventory: Inventory, player: Player): AbstractContainerMenu =
+        ShopMenu(id, inventory, this)
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
@@ -137,5 +148,4 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         ContainerHelper.loadAllItems(tag.getCompound("stock"), list, registries)
         for (slot in list.indices) stock.setItem(slot, list[slot])
     }
-
 }

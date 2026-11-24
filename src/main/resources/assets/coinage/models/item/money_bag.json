@@ -1,1 +1,6 @@
-{"parent": "minecraft:item/generated", "textures": {"layer0": "minecraft:item/bundle"}}
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "coinage:item/money_bag"
+  }
+}

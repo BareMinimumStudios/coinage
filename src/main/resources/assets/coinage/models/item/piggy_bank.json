@@ -1,1 +1,3 @@
-{"parent": "coinage:block/piggy_bank"}
+{
+  "parent": "coinage:block/piggy_bank_base"
+}

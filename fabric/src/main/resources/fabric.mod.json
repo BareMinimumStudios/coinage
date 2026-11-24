@@ -9,6 +9,7 @@
   "entrypoints": {
     "main": [{"adapter": "kotlin", "value": "net.bms.coinage.CoinageFabric"}]
   },
+  "mixins": ["coinage.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.5",
     "fabric-api": "*",

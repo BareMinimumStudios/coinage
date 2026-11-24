@@ -7,14 +7,24 @@ import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.VoxelShape
 
-class ShopBlock(val pawn: Boolean, val unlimited: Boolean) : BaseEntityBlock(BlockBehaviour.Properties.of().strength(3f, 6f)) {
+class ShopBlock(val pawn: Boolean, val unlimited: Boolean) :
+    BaseEntityBlock(BlockBehaviour.Properties.of().strength(3f, 6f)) {
+    override fun getShape(
+        state: BlockState, level: BlockGetter, pos: BlockPos,
+        context: CollisionContext
+    ): VoxelShape = SHAPE
+
     override fun codec(): MapCodec<ShopBlock> = simpleCodec { ShopBlock(pawn, unlimited) }
     override fun getRenderShape(state: BlockState) = RenderShape.MODEL
     override fun newBlockEntity(pos: BlockPos, state: BlockState) = ShopEntity(pos, state)
@@ -23,7 +33,13 @@ class ShopBlock(val pawn: Boolean, val unlimited: Boolean) : BaseEntityBlock(Blo
         if (placer is Player) (level.getBlockEntity(pos) as? ShopEntity)?.claim(placer)
     }
 
-    override fun useWithoutItem(state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): InteractionResult {
+    override fun useWithoutItem(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        player: Player,
+        hit: BlockHitResult
+    ): InteractionResult {
         if (!level.isClientSide) {
             val shop = level.getBlockEntity(pos) as? ShopEntity ?: return InteractionResult.PASS
             shop.claim(player)
@@ -36,9 +52,18 @@ class ShopBlock(val pawn: Boolean, val unlimited: Boolean) : BaseEntityBlock(Blo
         if (state.block != replacement.block) {
             (level.getBlockEntity(pos) as? ShopEntity)?.let { shop ->
                 Containers.dropContents(level, pos, shop.stock)
-                if (!level.isClientSide && shop.storedCoins > 0) Containers.dropItemStack(level, pos.x + .5, pos.y + .5, pos.z + .5, MoneyBagItem.create(shop.storedCoins))
+                if (!level.isClientSide && shop.storedCoins > 0) Containers.dropItemStack(
+                    level,
+                    pos.x + .5,
+                    pos.y + .5,
+                    pos.z + .5,
+                    MoneyBagItem.create(shop.storedCoins)
+                )
             }
         }
         super.onRemove(state, level, pos, replacement, moving)
+    }
+    companion object {
+        private val SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0)
     }
 }

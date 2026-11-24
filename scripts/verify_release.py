@@ -22,8 +22,14 @@ def verify(loader):
     with ZipFile(jars[0]) as archive:
         names = set(archive.namelist())
         required = {
-            "LICENSE", metadata_paths[loader],
+            "LICENSE", "LICENSE-UPSTREAM", "NOTICE.md", metadata_paths[loader], "coinage.mixins.json",
             "net/bms/coinage/PurseLedger.class",
+            "net/bms/coinage/CoinageCreative.class",
+            "net/bms/coinage/ShopEntity.class",
+            "net/bms/coinage/CurrencyInteractions.class",
+            "net/bms/coinage/mixin/ItemStackCountMixin.class",
+            "net/bms/coinage/mixin/StackSizeComponentMixin.class",
+            "net/bms/coinage/mixin/ContainerStackLimitMixin.class",
             "net/bms/coinage/internal/crunch/Crunch.class",
             "net/bms/coinage/EconomyConfig.class",
         }

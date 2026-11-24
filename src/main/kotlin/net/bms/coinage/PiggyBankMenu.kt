@@ -32,7 +32,7 @@ internal class PiggyBankMenu(id: Int, playerInventory: Inventory, private val ba
         val stack = slot.item
         val original = stack.copy()
         val moved = if (index < 27) moveItemStackTo(stack, 27, slots.size, true)
-            else moveItemStackTo(stack, 0, 27, false)
+        else moveItemStackTo(stack, 0, 27, false)
         if (!moved) return ItemStack.EMPTY
         if (stack.isEmpty) slot.setByPlayer(ItemStack.EMPTY) else slot.setChanged()
         slot.onTake(player, stack)

@@ -17,46 +17,92 @@ import net.minecraft.world.phys.BlockHitResult
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
-        dispatcher.register(literal("coinage")
-            .then(literal("balance").executes(::showOwnBalance)
-                .then(argument("player", EntityArgument.player())
-                    .requires { it.hasPermission(2) }
-                    .executes(::showTargetBalance)
-                    .then(literal("get").executes(::showTargetBalance))
-                    .then(literal("set").then(argument("coins", StringArgumentType.greedyString())
-                        .executes(::setBalance)))
-                    .then(literal("add").then(argument("coins", StringArgumentType.greedyString())
-                        .executes { adjustBalance(it, false) }))
-                    .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
-                        .executes { adjustBalance(it, true) }))))
+        dispatcher.register(
+            literal("coinage")
+            .then(
+                literal("balance").executes(::showOwnBalance)
+                    .then(
+                        argument("player", EntityArgument.player())
+                        .requires { it.hasPermission(2) }
+                        .executes(::showTargetBalance)
+                        .then(literal("get").executes(::showTargetBalance))
+                        .then(
+                            literal("set").then(
+                                argument("coins", StringArgumentType.greedyString())
+                                    .executes(::setBalance)
+                            )
+                        )
+                        .then(
+                            literal("add").then(
+                                argument("coins", StringArgumentType.greedyString())
+                                    .executes { adjustBalance(it, false) })
+                        )
+                        .then(
+                            literal("subtract").then(
+                                argument("coins", StringArgumentType.greedyString())
+                                    .executes { adjustBalance(it, true) })
+                        )
+                    )
+            )
             .then(literal("rates").executes(::showRates))
-            .then(literal("shop")
-                .then(literal("offer").then(argument("slot", IntegerArgumentType.integer(1, 9))
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::configureShop))))
-                .then(literal("fund").then(argument("coins", StringArgumentType.greedyString()).executes(::fundShop))))
-            .then(literal("bag")
-                .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag)))
-            .then(literal("withdraw")
-                .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw)))
+            .then(
+                literal("shop")
+                    .then(
+                        literal("offer").then(
+                            argument("slot", IntegerArgumentType.integer(1, 9))
+                                .then(
+                                    argument(
+                                        "coins",
+                                        StringArgumentType.greedyString()
+                                    ).executes(::configureShop)
+                                )
+                        )
+                    )
+                    .then(
+                        literal("fund").then(
+                            argument(
+                                "coins",
+                                StringArgumentType.greedyString()
+                            ).executes(::fundShop)
+                        )
+                    )
+            )
+            .then(
+                literal("bag")
+                    .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag))
+            )
+            .then(
+                literal("withdraw")
+                    .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw))
+            )
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
-                .then(argument("limit", IntegerArgumentType.integer(1, 100))
-                    .executes { showRichest(it, IntegerArgumentType.getInteger(it, "limit")) }))
+                .then(
+                    argument("limit", IntegerArgumentType.integer(1, 100))
+                        .executes { showRichest(it, IntegerArgumentType.getInteger(it, "limit")) }))
             .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
-                .then(argument("player", EntityArgument.player())
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::pay)))))
+                .then(
+                    argument("player", EntityArgument.player())
+                        .then(argument("coins", StringArgumentType.greedyString()).executes(::pay))
+                )))
     }
 
     private fun showRates(context: CommandContext<CommandSourceStack>): Int {
         val rates = CurrencyValues.current()
         val ratios = listOf(rates.bronzePerIron, rates.ironPerSilver, rates.silverPerGold, rates.goldPerPlatinum)
         for (index in ratios.indices) {
-            val lower = Component.translatable("item.coinage." + CoinTier.entries[index].name.lowercase(Locale.ROOT) + "_coin")
-            val higher = Component.translatable("item.coinage." + CoinTier.entries[index + 1].name.lowercase(Locale.ROOT) + "_coin")
-            context.source.sendSuccess({ Component.translatable("command.coinage.rate", ratios[index], lower, higher) }, false)
+            val lower =
+                Component.translatable("item.coinage." + CoinTier.entries[index].name.lowercase(Locale.ROOT) + "_coin")
+            val higher =
+                Component.translatable("item.coinage." + CoinTier.entries[index + 1].name.lowercase(Locale.ROOT) + "_coin")
+            context.source.sendSuccess(
+                { Component.translatable("command.coinage.rate", ratios[index], lower, higher) },
+                false
+            )
         }
         return 1
     }
+
     private fun showOwnBalance(context: CommandContext<CommandSourceStack>): Int {
         val source = context.source
         val player = source.playerOrException
@@ -69,7 +115,10 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val source = context.source
         val player = EntityArgument.getPlayer(context, "player")
         val balance = PurseLedger.get(source.server).balance(player.uuid)
-        source.sendSuccess({ Component.translatable("command.coinage.balance.other", player.displayName, balance) }, false)
+        source.sendSuccess(
+            { Component.translatable("command.coinage.balance.other", player.displayName, balance) },
+            false
+        )
         return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
@@ -120,8 +169,17 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         ) {
             throw paymentFailed.create()
         }
-        source.sendSuccess({ Component.translatable("command.coinage.payment.sent", amount, recipient.displayName) }, false)
-        recipient.sendSystemMessage(Component.translatable("command.coinage.payment.received", amount, sender.displayName))
+        source.sendSuccess(
+            { Component.translatable("command.coinage.payment.sent", amount, recipient.displayName) },
+            false
+        )
+        recipient.sendSystemMessage(
+            Component.translatable(
+                "command.coinage.payment.received",
+                amount,
+                sender.displayName
+            )
+        )
         return 1
     }
 
@@ -134,8 +192,11 @@ internal class EconomyCommands(private val config: EconomyConfig) {
 
     private fun configureShop(context: CommandContext<CommandSourceStack>): Int {
         val shop = targetShop(context)
-        if (!shop.configure(context.source.playerOrException,
-                IntegerArgumentType.getInteger(context, "slot") - 1, coinAmount(context, 0))) {
+        if (!shop.configure(
+                context.source.playerOrException,
+                IntegerArgumentType.getInteger(context, "slot") - 1, coinAmount(context, 0)
+            )
+        ) {
             throw paymentFailed.create()
         }
         context.source.sendSuccess({ Component.translatable("command.coinage.shop.configured") }, false)
@@ -143,7 +204,11 @@ internal class EconomyCommands(private val config: EconomyConfig) {
     }
 
     private fun fundShop(context: CommandContext<CommandSourceStack>): Int {
-        if (!targetShop(context).fund(context.source.playerOrException, coinAmount(context, 1))) throw paymentFailed.create()
+        if (!targetShop(context).fund(
+                context.source.playerOrException,
+                coinAmount(context, 1)
+            )
+        ) throw paymentFailed.create()
         context.source.sendSuccess({ Component.translatable("command.coinage.shop.funded") }, false)
         return 1
     }
@@ -170,9 +235,9 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         for (coin in CoinageItems.descending) {
             var count = remaining / coin.denomination
             remaining %= coin.denomination
-            if (count > 3564) throw invalidAmount.create()
+            if (count > 3600) throw invalidAmount.create()
             while (count > 0) {
-                val size = minOf(count, 99).toInt()
+                val size = minOf(count, 100).toInt()
                 stacks.add(ItemStack(coin, size))
                 count -= size
             }

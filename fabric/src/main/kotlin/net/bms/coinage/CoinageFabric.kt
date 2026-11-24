@@ -4,9 +4,12 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntityType
 
 object CoinageFabric : ModInitializer {
@@ -36,6 +39,15 @@ object CoinageFabric : ModInitializer {
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "shop"),
             BlockEntityType.Builder.of(::ShopEntity, *CoinageBlocks.shops.values.toTypedArray()).build(null)
+        )
+        Registry.register(
+            BuiltInRegistries.CREATIVE_MODE_TAB,
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, "main"),
+            FabricItemGroup.builder()
+                .title(Component.translatable("itemGroup.coinage"))
+                .icon { ItemStack(CoinageItems.platinum) }
+                .displayItems { _, output -> CoinageCreative.fill(output) }
+                .build()
         )
         val config = EconomyConfig.register()
         val commands = EconomyCommands(config)

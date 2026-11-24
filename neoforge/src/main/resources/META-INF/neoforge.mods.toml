@@ -26,3 +26,6 @@ modId="fzzy_config"
 type="required"
 versionRange="[0.7.7,)"
 side="BOTH"
+
+[[mixins]]
+config="coinage.mixins.json"

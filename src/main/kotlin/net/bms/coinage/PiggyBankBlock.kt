@@ -4,14 +4,16 @@ import com.mojang.serialization.MapCodec
 import java.util.Locale.ROOT
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.ContainerHelper
-import net.minecraft.world.Containers
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.MenuProvider
 import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
@@ -19,21 +21,38 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.ItemContainerContents
+import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.shapes.CollisionContext
+import net.minecraft.world.phys.shapes.Shapes
+import net.minecraft.world.phys.shapes.VoxelShape
 
 class PiggyBankBlock : BaseEntityBlock(BlockBehaviour.Properties.of().strength(1.0f).noOcclusion()) {
+    override fun getShape(
+        state: BlockState, level: BlockGetter, pos: BlockPos,
+        context: CollisionContext
+    ): VoxelShape = SHAPE
+
     override fun codec(): MapCodec<PiggyBankBlock> = CODEC
     override fun getRenderShape(state: BlockState) = RenderShape.MODEL
     override fun newBlockEntity(pos: BlockPos, state: BlockState) = PiggyBankEntity(pos, state)
 
-    override fun useWithoutItem(state: BlockState, level: Level, pos: BlockPos, player: Player, hit: BlockHitResult): InteractionResult {
+    override fun useWithoutItem(
+        state: BlockState,
+        level: Level,
+        pos: BlockPos,
+        player: Player,
+        hit: BlockHitResult
+    ): InteractionResult {
         if (!level.isClientSide) {
             val bank = level.getBlockEntity(pos) as? PiggyBankEntity ?: return InteractionResult.PASS
             player.openMenu(bank)
@@ -41,33 +60,67 @@ class PiggyBankBlock : BaseEntityBlock(BlockBehaviour.Properties.of().strength(1
         return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
-    override fun onRemove(state: BlockState, level: Level, pos: BlockPos, replacement: BlockState, moving: Boolean) {
-        if (state.block != replacement.block) {
-            (level.getBlockEntity(pos) as? PiggyBankEntity)?.let { Containers.dropContents(level, pos, it.inventory) }
+    override fun playerWillDestroy(level: Level, pos: BlockPos, state: BlockState, player: Player): BlockState {
+        val bank = level.getBlockEntity(pos) as? PiggyBankEntity
+        if (!level.isClientSide && player.isCreative && bank != null && !bank.inventory.isEmpty) {
+            val stack = ItemStack(this)
+            bank.saveToItem(stack, level.registryAccess())
+            val drop = ItemEntity(level, pos.x + 0.5, pos.y + 0.5, pos.z + 0.5, stack)
+            drop.setDefaultPickUpDelay()
+            level.addFreshEntity(drop)
         }
-        super.onRemove(state, level, pos, replacement, moving)
+        return super.playerWillDestroy(level, pos, state, player)
     }
 
     companion object {
+        private val SHAPE = Shapes.or(
+            Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0),
+            Block.box(7.0, 2.0, 4.0, 9.0, 4.0, 5.0)
+        )
         val CODEC: MapCodec<PiggyBankBlock> = simpleCodec { PiggyBankBlock() }
     }
 }
 
-class PiggyBankEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.piggyType, pos, state), MenuProvider {
+class PiggyBankEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.piggyType, pos, state),
+    MenuProvider {
     val inventory = object : SimpleContainer(27) {
         override fun setChanged() {
             super.setChanged()
             this@PiggyBankEntity.setChanged()
         }
+
         override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean =
             stack.item is CoinItem || stack.item is MoneyBagItem
+
         override fun stillValid(player: Player): Boolean =
             level?.getBlockEntity(worldPosition) === this@PiggyBankEntity &&
-                player.distanceToSqr(worldPosition.x + 0.5, worldPosition.y + 0.5, worldPosition.z + 0.5) <= 64
+                    player.distanceToSqr(worldPosition.x + 0.5, worldPosition.y + 0.5, worldPosition.z + 0.5) <= 64
     }
 
-    override fun getDisplayName(): Component = Component.translatable("container.coinage.piggy_bank")
-    override fun createMenu(id: Int, playerInventory: Inventory, player: Player): AbstractContainerMenu = PiggyBankMenu(id, playerInventory, inventory)
+    override fun getDisplayName(): Component =
+        components().get(DataComponents.CUSTOM_NAME) ?: Component.translatable("container.coinage.piggy_bank")
+    override fun createMenu(id: Int, playerInventory: Inventory, player: Player): AbstractContainerMenu =
+        PiggyBankMenu(id, playerInventory, inventory)
+
+    override fun applyImplicitComponents(input: DataComponentInput) {
+        super.applyImplicitComponents(input)
+        val contents = input.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+        val stacks = NonNullList.withSize(27, ItemStack.EMPTY)
+        contents.copyInto(stacks)
+        for (slot in stacks.indices) inventory.setItem(slot, stacks[slot])
+    }
+
+    override fun collectImplicitComponents(builder: DataComponentMap.Builder) {
+        super.collectImplicitComponents(builder)
+        builder.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(
+            (0 until inventory.containerSize).map { inventory.getItem(it) }
+        ))
+    }
+
+    override fun removeComponentsFromTag(tag: CompoundTag) {
+        super.removeComponentsFromTag(tag)
+        tag.remove("Items")
+    }
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
