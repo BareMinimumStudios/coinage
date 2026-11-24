@@ -1,16 +1,17 @@
 package net.bms.coinage
 
-import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
-import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.Commands.argument
 import net.minecraft.commands.Commands.literal
-import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.item.ItemStack
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
@@ -124,14 +125,14 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val ledger = PurseLedger.get(context.source.server)
         if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
         var remaining = amount
-        val stacks = mutableListOf<net.minecraft.world.item.ItemStack>()
+        val stacks = mutableListOf<ItemStack>()
         for (coin in listOf(CoinageItems.gold, CoinageItems.silver, CoinageItems.bronze)) {
             var count = remaining / coin.denomination
             remaining %= coin.denomination
             if (count > 3564) throw invalidAmount.create()
             while (count > 0) {
                 val size = minOf(count, 99).toInt()
-                stacks.add(net.minecraft.world.item.ItemStack(coin, size))
+                stacks.add(ItemStack(coin, size))
                 count -= size
             }
         }

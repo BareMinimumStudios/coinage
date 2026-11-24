@@ -1,6 +1,7 @@
 package net.bms.coinage
 
 import com.mojang.serialization.MapCodec
+import java.util.Locale.ROOT
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
@@ -8,24 +9,24 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.MenuProvider
-import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.inventory.ChestMenu
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
-import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.RenderShape
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.Level
+import net.minecraft.world.MenuProvider
 import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.SimpleContainer
 
 class PiggyBankBlock : BaseEntityBlock(BlockBehaviour.Properties.of().strength(1.0f).noOcclusion()) {
     override fun codec(): MapCodec<PiggyBankBlock> = CODEC
@@ -86,7 +87,7 @@ class PiggyBankEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlo
 object CoinageBlocks {
     val piggyBanks = linkedMapOf<String, PiggyBankBlock>().apply {
         put("piggy_bank", PiggyBankBlock())
-        DyeColor.entries.forEach { put(it.name.lowercase(java.util.Locale.ROOT) + "_piggy_bank", PiggyBankBlock()) }
+        DyeColor.entries.forEach { put(it.name.lowercase(ROOT) + "_piggy_bank", PiggyBankBlock()) }
     }
     val items = piggyBanks.mapValues { (_, block) -> BlockItem(block, Item.Properties().stacksTo(1)) }
     lateinit var piggyType: BlockEntityType<PiggyBankEntity>

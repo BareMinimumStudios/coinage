@@ -1,10 +1,11 @@
 package net.bms.coinage
 
+import java.util.PriorityQueue
+import java.util.UUID
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.saveddata.SavedData
-import java.util.UUID
 
 internal class PurseLedger : SavedData() {
     private val balances = HashMap<UUID, Long>()
@@ -30,7 +31,7 @@ internal class PurseLedger : SavedData() {
 
     fun richest(limit: Int): List<Map.Entry<UUID, Long>> {
         val order = compareByDescending<Map.Entry<UUID, Long>> { it.value }.thenBy { it.key }
-        val best = java.util.PriorityQueue(limit, order.reversed())
+        val best = PriorityQueue(limit, order.reversed())
         for (entry in balances.entries) {
             if (best.size < limit) {
                 best.add(entry)

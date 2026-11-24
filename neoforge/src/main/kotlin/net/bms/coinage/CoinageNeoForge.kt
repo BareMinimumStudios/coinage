@@ -1,35 +1,40 @@
 package net.bms.coinage
 
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.block.entity.BlockEntityType
+import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.registries.RegisterEvent
 
 @Mod(MOD_ID)
-class CoinageNeoForge(modBus: net.neoforged.bus.api.IEventBus) {
+class CoinageNeoForge(modBus: IEventBus) {
     init {
-        modBus.addListener { event: net.neoforged.neoforge.registries.RegisterEvent ->
-            event.register(net.minecraft.core.registries.Registries.ITEM) { registry ->
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.ITEM) { registry ->
                 CoinageItems.entries.forEach { (name, item) ->
-                    registry.register(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item)
+                    registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item)
                 }
             }
         }
-        modBus.addListener { event: net.neoforged.neoforge.registries.RegisterEvent ->
-            event.register(net.minecraft.core.registries.Registries.BLOCK) { registry ->
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.BLOCK) { registry ->
                 CoinageBlocks.piggyBanks.forEach { (name, block) ->
-                    registry.register(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, name), block)
+                    registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, name), block)
                 }
             }
-            event.register(net.minecraft.core.registries.Registries.ITEM) { registry ->
+            event.register(Registries.ITEM) { registry ->
                 CoinageBlocks.items.forEach { (name, item) ->
-                    registry.register(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item)
+                    registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item)
                 }
             }
-            event.register(net.minecraft.core.registries.Registries.BLOCK_ENTITY_TYPE) { registry ->
-                CoinageBlocks.piggyType = net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(
+            event.register(Registries.BLOCK_ENTITY_TYPE) { registry ->
+                CoinageBlocks.piggyType = BlockEntityType.Builder.of(
                     ::PiggyBankEntity, *CoinageBlocks.piggyBanks.values.toTypedArray()
                 ).build(null)
-                registry.register(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, "piggy_bank"), CoinageBlocks.piggyType)
+                registry.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, "piggy_bank"), CoinageBlocks.piggyType)
             }
         }
         val commands = EconomyCommands(EconomyConfig.register())

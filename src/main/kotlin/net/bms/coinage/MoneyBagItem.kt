@@ -3,12 +3,12 @@ package net.bms.coinage
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.level.Level
 
 class MoneyBagItem : Item(Properties().stacksTo(1)) {
