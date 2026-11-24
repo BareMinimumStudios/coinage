@@ -11,6 +11,16 @@ object CoinageFabric : ModInitializer {
                 net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, name), item
             )
         }
+        CoinageBlocks.piggyBanks.forEach { (name, block) ->
+            val id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, name)
+            net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.BLOCK, id, block)
+            net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.ITEM, id, CoinageBlocks.items.getValue(name))
+        }
+        CoinageBlocks.piggyType = net.minecraft.core.Registry.register(
+            net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE,
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(MOD_ID, "piggy_bank"),
+            net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(::PiggyBankEntity, *CoinageBlocks.piggyBanks.values.toTypedArray()).build(null)
+        )
         val commands = EconomyCommands(EconomyConfig.register())
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ -> commands.register(dispatcher) }
     }

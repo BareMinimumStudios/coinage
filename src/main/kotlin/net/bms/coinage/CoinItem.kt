@@ -28,5 +28,6 @@ object CoinageItems {
     val bronze = CoinItem(1)
     val silver = CoinItem(100)
     val gold = CoinItem(10_000)
-    val entries = linkedMapOf("bronze_coin" to bronze, "silver_coin" to silver, "gold_coin" to gold)
+    val moneyBag = MoneyBagItem()
+    val entries: Map<String, Item> = linkedMapOf("money_bag" to moneyBag, "bronze_coin" to bronze, "silver_coin" to silver, "gold_coin" to gold)
 }

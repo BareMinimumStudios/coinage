@@ -25,6 +25,8 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                         .executes { adjustBalance(it, false) }))
                     .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
                         .executes { adjustBalance(it, true) }))))
+            .then(literal("bag")
+                .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag)))
             .then(literal("withdraw")
                 .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw)))
             .then(literal("top").requires { it.hasPermission(2) }
@@ -101,6 +103,18 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         }
         source.sendSuccess({ Component.translatable("command.coinage.payment.sent", amount, recipient.displayName) }, false)
         recipient.sendSystemMessage(Component.translatable("command.coinage.payment.received", amount, sender.displayName))
+        return 1
+    }
+
+    private fun makeBag(context: CommandContext<CommandSourceStack>): Int {
+        val player = context.source.playerOrException
+        val amount = coinAmount(context, 1)
+        val ledger = PurseLedger.get(context.source.server)
+        if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
+        val bag = MoneyBagItem.create(amount)
+        if (!player.inventory.add(bag)) throw paymentFailed.create()
+        ledger.setBalance(player.uuid, ledger.balance(player.uuid) - amount)
+        player.containerMenu.broadcastChanges()
         return 1
     }
 
