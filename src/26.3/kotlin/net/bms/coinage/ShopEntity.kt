@@ -37,6 +37,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         private set
     private val offers = TreeMap<Int, ShopOffer>()
     private var cachedOffers: List<ShopOffer>? = null
+    private var cachedNextOfferNumber = 1
     internal var revision = 0L
         private set
     internal val pageCount: Int get() = maxOf(1, ((offers.size.toLong() + 8) / 9).toInt())
@@ -50,7 +51,23 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
     }
 
     private fun orderedOffers(): List<ShopOffer> =
-        cachedOffers ?: offers.values.toList().also { cachedOffers = it }
+        cachedOffers ?: offers.values.toList().also { entries ->
+            cachedOffers = entries
+            var candidate = 0
+            for (offer in entries) {
+                if (offer.number != candidate) break
+                if (candidate == Int.MAX_VALUE - 1) break
+                candidate++
+            }
+            cachedNextOfferNumber = candidate + 1
+        }
+
+    internal val nextOfferNumber: Int get() {
+        orderedOffers()
+        return cachedNextOfferNumber
+    }
+
+    internal fun offerStack(number: Int): ItemStack? = offers[number]?.stack?.copy()
 
     internal fun pageOffers(page: Int): List<ShopOffer> {
         val entries = orderedOffers()
@@ -95,7 +112,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
 
     fun canManage(player: Player): Boolean = owner == player.uuid || (player as? ServerPlayer)?.permissions()?.hasPermission(Permission.HasCommandLevel(PermissionLevel.byId(2))) == true
 
-    fun configure(player: Player, slot: Int, price: Long): Boolean {
+    fun configure(player: Player, slot: Int, price: Long, template: ItemStack = player.mainHandItem): Boolean {
         if (!canManage(player) || slot < 0 || slot == Int.MAX_VALUE || price < 0) return false
         if (price == 0L) {
             if (offers.remove(slot) != null) {
@@ -104,7 +121,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             }
             return true
         }
-        val stack = player.mainHandItem
+        val stack = template
         if (stack.isEmpty || stack.count > stack.maxStackSize) return false
         val previous = offers[slot]
         if (previous != null && previous.price == price && ItemStack.matches(previous.stack, stack)) return true

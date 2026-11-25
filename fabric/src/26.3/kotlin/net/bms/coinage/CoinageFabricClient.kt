@@ -1,6 +1,7 @@
 package net.bms.coinage
 
 import net.bms.coinage.client.PurseClient
+import net.bms.coinage.client.ShopClient
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
@@ -15,6 +16,12 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens
 object CoinageFabricClient : ClientModInitializer {
     override fun onInitializeClient() {
         PurseClient.initialize()
+        ShopClient.initialize()
+        ShopClient.available = { ClientPlayNetworking.canSend(ShopEditPayloads.EDIT) }
+        ShopClient.send = { ClientPlayNetworking.send(it) }
+        ClientPlayNetworking.registerGlobalReceiver(ShopEditPayloads.RESULT) { packet, context ->
+            context.client().execute { ShopEditPayloads.receive(packet) }
+        }
         KeyMapping.Category.register(PurseClient.key.category.id())
         KeyMappingHelper.registerKeyMapping(PurseClient.key)
         PurseClient.requestOpen = {
@@ -28,11 +35,13 @@ object CoinageFabricClient : ClientModInitializer {
             if (ClientPlayNetworking.canSend(PursePayloads.HELLO)) ClientPlayNetworking.send(PursePayloads.Hello())
         }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> PurseClient.reset() }
-        ClientTickEvents.END_CLIENT_TICK.register { PurseClient.tick() }
+        ClientTickEvents.END_CLIENT_TICK.register { PurseClient.tick(); ShopClient.tick() }
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "purse")) { graphics, _ -> PurseClient.render(graphics) }
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             val buttons = PurseClient.inventoryButtons(screen)
+            val shopButtons = ShopClient.buttons(screen)
             Screens.getWidgets(screen).addAll(buttons)
+            Screens.getWidgets(screen).addAll(shopButtons)
             ScreenEvents.afterTick(screen).register {
                 buttons.firstOrNull()?.active = ClientPurseState.ready
             }

@@ -57,7 +57,7 @@ object CoinageFabric : ModInitializer {
         Registry.register(BuiltInRegistries.SOUND_EVENT,
             ResourceLocation.fromNamespaceAndPath(MOD_ID, "piggy_bank_break"), PiggyBankEffects.breakSound)
         val config = EconomyConfig.register()
-        PurseFabricNetwork.register()
+        CoinageFabricNetwork.register()
         ShopFabricAutomation.register()
         LootTableEvents.MODIFY.register { key, table, _, _ ->
             ChestCurrencyLoot.pools(key.location().toString(), config.chestLoot).forEach { (_, pool) -> table.withPool(pool) }

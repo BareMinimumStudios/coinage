@@ -13,9 +13,10 @@ import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 
-internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: ShopEntity) :
+internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: ShopEntity) :
     AbstractContainerMenu(MenuType.GENERIC_9x6, id) {
     private val display = SimpleContainer(54)
+    private val viewer = playerInventory.player
     private var page = 0
     private var shownPage = -1
     private var shownRevision = -1L
@@ -55,6 +56,7 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
             val item = offer?.stack?.copy() ?: ItemStack.EMPTY
             if (offer != null) item.set(DataComponents.CUSTOM_NAME, Component.translatable(
                 "gui.coinage.numbered_offer", offer.number + 1, offer.stack.hoverName, offer.price))
+            if (offer != null) ShopEditorData.markOffer(item, offer.number + 1, offer.price)
             display.setItem(slot, item)
         }
         display.setItem(46, if (page > 0) ItemStack(Items.ARROW).apply {
@@ -77,6 +79,7 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
         })
         display.setItem(53, ItemStack(Items.PAPER).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.shop_help"))
+            ShopEditorData.markMenu(this, shop.canManage(viewer), shop.nextOfferNumber)
         })
     }
 

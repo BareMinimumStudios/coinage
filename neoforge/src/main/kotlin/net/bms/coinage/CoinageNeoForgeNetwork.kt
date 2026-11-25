@@ -9,13 +9,22 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent
 import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
 
-internal object PurseNeoForgeNetwork {
+internal object CoinageNeoForgeNetwork {
     fun register(bus: IEventBus) {
+        ShopEditing.send = { player, reply ->
+            if (player.connection.hasChannel(ShopEditPayloads.RESULT)) PacketDistributor.sendToPlayer(player, reply)
+        }
         PurseSync.send = { player, snapshot ->
             if (player.connection.hasChannel(PursePayloads.SNAPSHOT)) PacketDistributor.sendToPlayer(player, snapshot)
         }
         bus.addListener { event: RegisterPayloadHandlersEvent ->
             val registrar = event.registrar(PursePayloads.PROTOCOL.toString()).optional()
+            registrar.playToServer(ShopEditPayloads.EDIT, ShopEditPayloads.EDIT_CODEC) { packet, context ->
+                context.enqueueWork { ShopEditing.edit(context.player() as ServerPlayer, packet) }
+            }
+            registrar.playToClient(ShopEditPayloads.RESULT, ShopEditPayloads.RESULT_CODEC) { packet, context ->
+                context.enqueueWork { ShopEditPayloads.receive(packet) }
+            }
             registrar.playToServer(PursePayloads.HELLO, PursePayloads.HELLO_CODEC) { packet, context ->
                 context.enqueueWork { PurseSync.hello(context.player() as ServerPlayer, packet.protocol) }
             }

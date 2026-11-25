@@ -53,6 +53,11 @@ def verify(loader):
             "net/bms/coinage/ShopEntity.class",
             "net/bms/coinage/ShopOffer.class",
             "net/bms/coinage/ShopClickGuard.class",
+            "net/bms/coinage/ShopEditing.class",
+            "net/bms/coinage/ShopEditPayloads.class",
+            "net/bms/coinage/ShopEditorData.class",
+            "net/bms/coinage/client/ShopClient.class",
+            "net/bms/coinage/client/ShopEditScreen.class",
             "net/bms/coinage/mixin/ShopClickGuardMixin.class",
             "net/bms/coinage/CurrencyInteractions.class",
             "net/bms/coinage/mixin/ItemStackCountMixin.class",
@@ -69,7 +74,7 @@ def verify(loader):
             "PurseMigration", "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
             "CoinageFabric" if loader == "fabric" else "CoinageNeoForge",
             "CoinageFabricClient" if loader == "fabric" else "CoinageNeoForgeClient",
-            "PurseFabricNetwork" if loader == "fabric" else "PurseNeoForgeNetwork",
+            "CoinageFabricNetwork" if loader == "fabric" else "CoinageNeoForgeNetwork",
             "ShopFabricAutomation" if loader == "fabric" else "ShopNeoForgeAutomation"
         ))
         if missing := required - names:

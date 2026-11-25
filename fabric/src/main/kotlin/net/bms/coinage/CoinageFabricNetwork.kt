@@ -6,8 +6,16 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
-internal object PurseFabricNetwork {
+internal object CoinageFabricNetwork {
     fun register() {
+        PayloadTypeRegistry.playC2S().register(ShopEditPayloads.EDIT, ShopEditPayloads.EDIT_CODEC)
+        PayloadTypeRegistry.playS2C().register(ShopEditPayloads.RESULT, ShopEditPayloads.RESULT_CODEC)
+        ShopEditing.send = { player, reply ->
+            if (ServerPlayNetworking.canSend(player, ShopEditPayloads.RESULT)) ServerPlayNetworking.send(player, reply)
+        }
+        ServerPlayNetworking.registerGlobalReceiver(ShopEditPayloads.EDIT) { packet, context ->
+            context.server().execute { ShopEditing.edit(context.player(), packet) }
+        }
         PayloadTypeRegistry.playC2S().register(PursePayloads.HELLO, PursePayloads.HELLO_CODEC)
         PayloadTypeRegistry.playC2S().register(PursePayloads.OPEN, PursePayloads.OPEN_CODEC)
         PayloadTypeRegistry.playS2C().register(PursePayloads.SNAPSHOT, PursePayloads.SNAPSHOT_CODEC)
