@@ -3,11 +3,17 @@ package net.bms.coinage
 import java.util.UUID
 import java.util.TreeMap
 import net.minecraft.core.Direction
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.HolderLookup
 import net.minecraft.core.BlockPos
 import net.minecraft.core.NonNullList
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.UUIDUtil
 import net.minecraft.network.chat.Component
+import net.minecraft.world.level.block.Block
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.permissions.Permission
 import net.minecraft.server.permissions.PermissionLevel
@@ -40,6 +46,31 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         private set
     internal val pageCount: Int get() = maxOf(1, ((offers.size.toLong() + 8) / 9).toInt())
     val stock = ShopStock(this)
+
+    private var displayItems: List<ItemStack> = emptyList()
+
+    internal val displayStack: ItemStack
+        get() {
+            if (displayItems.isEmpty()) return ItemStack.EMPTY
+            val seconds = (level?.gameTime ?: 0L) / 60L
+            return displayItems[Math.floorMod(seconds, displayItems.size.toLong()).toInt()]
+        }
+
+    private fun updateDisplay() {
+        val serverLevel = level as? ServerLevel ?: return
+        serverLevel.sendBlockUpdated(blockPos, blockState, blockState, Block.UPDATE_CLIENTS)
+    }
+
+    override fun getUpdatePacket(): ClientboundBlockEntityDataPacket = ClientboundBlockEntityDataPacket.create(this)
+
+    override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag = CompoundTag().apply {
+        putBoolean("display_update", true)
+        if (offers.isNotEmpty()) {
+            val ops = registries.createSerializationContext(NbtOps.INSTANCE)
+            val items = orderedOffers().map { it.stack.copyWithCount(1) }
+            DISPLAY_ITEMS_CODEC.encodeStart(ops, items).result().ifPresent { put("display", it) }
+        }
+    }
 
     val shopBlock: ShopBlock get() = blockState.block as ShopBlock
 
@@ -116,6 +147,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             if (offers.remove(slot) != null) {
                 cachedOffers = null
                 setChanged()
+                updateDisplay()
             }
             return true
         }
@@ -126,6 +158,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         offers[slot] = ShopOffer(slot, price, stack.copy())
         cachedOffers = null
         setChanged()
+        if (previous == null || !ItemStack.isSameItemSameComponents(previous.stack, stack)) updateDisplay()
         return true
     }
 
@@ -238,6 +271,10 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
 
     override fun loadAdditional(tag: ValueInput) {
         super.loadAdditional(tag)
+        if (tag.getBooleanOr("display_update", false)) {
+            displayItems = tag.read("display", DISPLAY_ITEMS_CODEC).orElse(emptyList())
+            return
+        }
         owner = tag.read("owner", UUIDUtil.CODEC).orElse(null)
         storedCoins = tag.getLongOr("coins", 0).coerceAtLeast(0)
         automationEnabled = tag.getBooleanOr("automation", false)
@@ -259,6 +296,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
     }
 
     companion object {
+        private val DISPLAY_ITEMS_CODEC = ItemStack.CODEC.listOf()
         private val LOGGER = LoggerFactory.getLogger("Coinage/Shops")
     }
 }

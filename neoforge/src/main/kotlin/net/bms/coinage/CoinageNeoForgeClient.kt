@@ -4,6 +4,7 @@ import net.bms.coinage.client.PurseAmountClient
 import net.bms.coinage.client.PursePopupClient
 import net.bms.coinage.client.PurseClient
 import net.bms.coinage.client.ShopClient
+import net.bms.coinage.client.ShopDisplayRenderer
 import net.minecraft.client.Minecraft
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
@@ -12,6 +13,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
 import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
+import net.neoforged.neoforge.client.event.EntityRenderersEvent
 import net.neoforged.neoforge.client.event.RenderGuiEvent
 import net.neoforged.neoforge.client.event.ScreenEvent
 import net.neoforged.neoforge.common.NeoForge
@@ -20,6 +22,9 @@ import net.neoforged.neoforge.network.PacketDistributor
 @Mod(value = MOD_ID, dist = [Dist.CLIENT])
 class CoinageNeoForgeClient(modBus: IEventBus) {
     init {
+        modBus.addListener { event: EntityRenderersEvent.RegisterRenderers ->
+            event.registerBlockEntityRenderer(CoinageBlocks.shopType, ::ShopDisplayRenderer)
+        }
         modBus.addListener { event: FMLClientSetupEvent -> event.enqueueWork { PurseClient.initialize(); PurseAmountClient.initialize(); ShopClient.initialize() } }
         modBus.addListener { event: RegisterKeyMappingsEvent -> event.register(PurseClient.key) }
         PurseAmountClient.available = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.WITHDRAW) == true }
