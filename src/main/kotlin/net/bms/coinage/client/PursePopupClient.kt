@@ -59,10 +59,18 @@ internal object PursePopupClient {
                 quick(PurseWithdrawPayloads.Quick(screen.menu.containerId, PurseAmountClient.nextRequest(), 0))
             } else open(screen)
         }
-        attached = screen to button
-        tooltipRevision = -1
+        button.visible = isButtonVisible(screen)
+        // Creative inventory can replace InventoryScreen during its initialization.
+        val current = Minecraft.getInstance().screen
+        if (current === screen || (current as? PursePopupScreen)?.parent === screen) {
+            attached = screen to button
+            tooltipRevision = -1
+        }
         return listOf(button)
     }
+
+    private fun isButtonVisible(screen: AbstractContainerScreen<*>): Boolean =
+        screen !is CreativeModeInventoryScreen || CreativeScreenAccessor.`coinage$getTab`().type == CreativeModeTab.Type.INVENTORY
 
     fun tick() {
         val (screen, button) = attached ?: return
@@ -74,7 +82,7 @@ internal object PursePopupClient {
         val (x, y) = anchor(screen)
         button.x = x
         button.y = y
-        button.visible = screen !is CreativeModeInventoryScreen || CreativeScreenAccessor.`coinage$getTab`().type == CreativeModeTab.Type.INVENTORY
+        button.visible = isButtonVisible(screen)
         button.active = ClientPurseState.ready
         if (tooltipRevision != ClientPurseState.revision) {
             tooltipRevision = ClientPurseState.revision
