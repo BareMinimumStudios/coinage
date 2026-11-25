@@ -15,6 +15,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.network.chat.FontDescription
 import net.minecraft.world.item.CreativeModeTab
 
 internal object PursePopupClient {
@@ -74,17 +76,23 @@ internal object PursePopupClient {
         }
     }
 
+    private val tooltipFont = FontDescription.Resource(Identifier.fromNamespaceAndPath("coinage", "purse_coins"))
+
     fun tooltip(): Component {
-        val tooltip = Component.translatable("gui.coinage.purse_balance", numbers.format(ClientPurseState.balance))
+        val tooltip = Component.empty().append(Component.translatable("container.coinage.purse").withStyle(net.minecraft.ChatFormatting.GOLD))
         var remaining = ClientPurseState.balance
         for (tier in CoinTier.entries.reversed()) {
             val unit = ClientPurseState.rates.value(tier)
             val count = remaining / unit
             remaining %= unit
-            if (count > 0) tooltip.append(Component.literal("\n${numbers.format(count)} "))
-                .append(Component.translatable("item.coinage.${tier.name.lowercase(Locale.ROOT)}_coin"))
+            if (count > 0 || (tier == CoinTier.BRONZE && ClientPurseState.balance == 0L)) {
+                val icon = (0xe000 + tier.ordinal).toChar()
+                val spacing = if (tier == CoinTier.PLATINUM) '\ue005' else '\ue004'
+                tooltip.append(Component.literal("\n"))
+                    .append(Component.literal("$icon$spacing").withStyle { it.withFont(tooltipFont).withColor(0xffffff) })
+                    .append(Component.literal(numbers.format(count)).withStyle(net.minecraft.ChatFormatting.GRAY))
+            }
         }
-        tooltip.append(Component.literal("\n")).append(Component.translatable("gui.coinage.purse_open_hint"))
         return tooltip
     }
 }

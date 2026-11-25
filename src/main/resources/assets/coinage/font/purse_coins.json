@@ -1,0 +1,47 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "coinage:item/bronze_coin.png",
+      "height": 16,
+      "ascent": 12,
+      "chars": [
+        "\ue000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "coinage:item/silver_coin.png",
+      "height": 16,
+      "ascent": 12,
+      "chars": [
+        "\ue001"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "coinage:item/gold_coin.png",
+      "height": 16,
+      "ascent": 12,
+      "chars": [
+        "\ue002"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "coinage:item/platinum_coin.png",
+      "height": 16,
+      "ascent": 12,
+      "chars": [
+        "\ue003"
+      ]
+    },
+    {
+      "type": "space",
+      "advances": {
+        "\ue004": 2,
+        "\ue005": 1
+      }
+    }
+  ]
+}

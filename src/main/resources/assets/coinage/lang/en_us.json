@@ -127,6 +127,6 @@
   "gui.coinage.purse_decrease": "Remove %s",
   "gui.coinage.purse_step": "%s: adjust by 1, or hold Shift for 10",
   "gui.coinage.purse_open_hint": "Open purse / Shift-click to deposit all currency",
-  "gui.coinage.purse_extract_hint": "Withdraw selected coins / Shift + Ctrl: withdraw all",
+  "gui.coinage.purse_extract_hint": "Withdraw selected coins / Ctrl: make a bag / Shift + Ctrl: withdraw all",
   "gui.coinage.purse_bag_hint": "Put the selected amount into a money bag"
 }
