@@ -47,6 +47,12 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
                 Component.translatable("gui.coinage.offer", shop.offers[slot].hoverName, shop.prices[slot]))
             display.setItem(slot, item)
         }
+        display.setItem(45, ItemStack(Items.HOPPER).apply {
+            set(DataComponents.CUSTOM_NAME, Component.translatable(
+                if (shop.shopBlock.pawn) "gui.coinage.automation_output" else "gui.coinage.automation_input",
+                Component.translatable(if (shop.automationEnabled) "options.on" else "options.off")
+            ))
+        })
         display.setItem(49, ItemStack(Items.GOLD_INGOT).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.collect", shop.storedCoins))
         })
@@ -74,6 +80,7 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
             return
         }
         if (slot in 36..53) {
+            if (slot == 45 && type == ContainerInput.PICKUP && button == 0) shop.setAutomation(player, !shop.automationEnabled)
             if (slot == 49 && player is ServerPlayer && type == ContainerInput.PICKUP && button == 0) shop.withdraw(player)
             broadcastChanges()
             return

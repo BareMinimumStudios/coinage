@@ -95,6 +95,7 @@ class CoinageNeoForge(modBus: IEventBus) {
         }
         val config = EconomyConfig.register()
         PurseNeoForgeNetwork.register(modBus)
+        ShopNeoForgeAutomation.register(modBus)
         NeoForge.EVENT_BUS.addListener { event: LootTableLoadEvent ->
             if (!event.isCanceled) ChestCurrencyLoot.pools(event.name.toString(), config.chestLoot).forEach { (name, pool) ->
                 if (event.table.getPool(name) == null) event.table.addPool(pool.name(name).build())

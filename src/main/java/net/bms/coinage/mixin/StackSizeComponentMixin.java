@@ -10,6 +10,6 @@ public abstract class StackSizeComponentMixin {
     // The codec is created in a compiler-generated callback whose name differs by mapping set.
     @ModifyConstant(method = "*", constant = @Constant(intValue = 99), require = 0)
     private static int coinage$allowHundredCoinStacks(int original) {
-        return 100;
+        return Math.max(original, 100);
     }
 }

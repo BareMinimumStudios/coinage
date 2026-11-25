@@ -9,6 +9,6 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public interface ContainerStackLimitMixin {
     @ModifyConstant(method = "getMaxStackSize()I", constant = @Constant(intValue = 99), require = 0)
     private int coinage$allowHundredCoinStacks(int original) {
-        return 100;
+        return Math.max(original, 100);
     }
 }

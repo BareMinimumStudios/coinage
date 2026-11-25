@@ -77,5 +77,8 @@
   "gui.coinage.gained": "+%s bronze",
   "gui.coinage.lost": "−%s bronze",
   "gui.coinage.open_purse": "Open your purse",
-  "gui.coinage.configure": "Coinage settings"
+  "gui.coinage.configure": "Coinage settings",
+  "gui.coinage.automation_input": "Hopper input: %s",
+  "gui.coinage.automation_output": "Hopper output: %s",
+  "command.coinage.shop.automation": "Shop automation: %s"
 }

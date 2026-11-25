@@ -1,6 +1,7 @@
 package net.bms.coinage
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
@@ -19,6 +20,10 @@ import net.minecraft.world.phys.BlockHitResult
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         MerchantCommands.register(dispatcher)
+        dispatcher.register(literal("coinage").then(literal("shop").then(literal("automation")
+            .executes { shopAutomation(it, null) }
+            .then(argument("enabled", BoolArgumentType.bool())
+                .executes { shopAutomation(it, BoolArgumentType.getBool(it, "enabled")) }))))
         dispatcher.register(literal("coinage").executes { PurseMenu.open(it.source.playerOrException); 1 }
             .then(literal("balance").executes(::showOwnBalance)
                 .then(argument("player", EntityArgument.player())
@@ -138,6 +143,14 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         val hit = player.pick(6.0, 0f, false) as? BlockHitResult
             ?: throw paymentFailed.create()
         return player.level().getBlockEntity(hit.blockPos) as? ShopEntity ?: throw paymentFailed.create()
+    }
+
+    private fun shopAutomation(context: CommandContext<CommandSourceStack>, enabled: Boolean?): Int {
+        val shop = targetShop(context)
+        if (!shop.setAutomation(context.source.playerOrException, enabled ?: !shop.automationEnabled)) throw paymentFailed.create()
+        context.source.sendSuccess({ Component.translatable("command.coinage.shop.automation",
+            Component.translatable(if (shop.automationEnabled) "options.on" else "options.off")) }, false)
+        return 1
     }
 
     private fun configureShop(context: CommandContext<CommandSourceStack>): Int {

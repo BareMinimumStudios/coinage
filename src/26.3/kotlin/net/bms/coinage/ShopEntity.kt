@@ -2,6 +2,7 @@ package net.bms.coinage
 
 import com.mojang.serialization.Codec
 import java.util.UUID
+import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
@@ -11,11 +12,11 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.permissions.Permission
 import net.minecraft.server.permissions.PermissionLevel
+import net.minecraft.world.WorldlyContainer
 import net.minecraft.world.Container
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.MenuProvider
-import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
@@ -25,21 +26,42 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
 
-class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.shopType, pos, state), MenuProvider {
+class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.shopType, pos, state), MenuProvider, WorldlyContainer {
     var owner: UUID? = null
+        private set
+    var automationEnabled = false
         private set
     var storedCoins = 0L
         private set
     val prices = LongArray(9)
     val offers = NonNullList.withSize(9, ItemStack.EMPTY)
-    val stock = object : SimpleContainer(27) {
-        override fun setChanged() {
-            super.setChanged()
-            this@ShopEntity.setChanged()
-        }
-    }
+    val stock = ShopStock(this)
 
     val shopBlock: ShopBlock get() = blockState.block as ShopBlock
+
+    fun setAutomation(player: Player, enabled: Boolean): Boolean {
+        if (!canManage(player)) return false
+        if (automationEnabled != enabled) {
+            automationEnabled = enabled
+            setChanged()
+        }
+        return true
+    }
+
+    override fun getContainerSize(): Int = stock.containerSize
+    override fun isEmpty(): Boolean = stock.isEmpty
+    override fun getItem(slot: Int): ItemStack = stock.getItem(slot)
+    override fun removeItem(slot: Int, amount: Int): ItemStack = stock.removeItem(slot, amount)
+    override fun removeItemNoUpdate(slot: Int): ItemStack = stock.removeItemNoUpdate(slot)
+    override fun setItem(slot: Int, stack: ItemStack) = stock.setItem(slot, stack)
+    override fun clearContent() = stock.clearContent()
+    override fun stillValid(player: Player): Boolean = canManage(player) &&
+        level?.getBlockEntity(blockPos) === this && player.distanceToSqr(blockPos.x + .5, blockPos.y + .5, blockPos.z + .5) <= 64
+    override fun getSlotsForFace(side: Direction): IntArray = stock.getSlotsForFace(side)
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = automationEnabled && !shopBlock.pawn
+    override fun canTakeItem(target: Container, slot: Int, stack: ItemStack): Boolean = automationEnabled && shopBlock.pawn
+    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: Direction?): Boolean = canPlaceItem(slot, stack)
+    override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, side: Direction): Boolean = automationEnabled && shopBlock.pawn
 
     fun claim(player: Player) {
         if (owner == null) {
@@ -60,7 +82,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
 
     fun withdraw(player: ServerPlayer): Boolean {
         if (!canManage(player) || storedCoins == 0L) return false
-        val ledger = PurseLedger.get(player.level().server!!)
+        val ledger = PurseLedger.get(player.level().server)
         val balance = ledger.balance(player.uuid)
         if (balance > Long.MAX_VALUE - storedCoins) return false
         ledger.setBalance(player.uuid, balance + storedCoins)
@@ -71,7 +93,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
 
     fun fund(player: ServerPlayer, amount: Long): Boolean {
         if (!canManage(player) || amount <= 0 || storedCoins > Long.MAX_VALUE - amount) return false
-        val ledger = PurseLedger.get(player.level().server!!)
+        val ledger = PurseLedger.get(player.level().server)
         val balance = ledger.balance(player.uuid)
         if (balance < amount) return false
         ledger.setBalance(player.uuid, balance - amount)
@@ -85,7 +107,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         val template = offers[offer]
         val price = prices[offer]
         if (template.isEmpty || price <= 0) return false
-        val ledger = PurseLedger.get(player.level().server!!)
+        val ledger = PurseLedger.get(player.level().server)
         val balance = ledger.balance(player.uuid)
         val pawn = shopBlock.pawn
         val unlimited = shopBlock.unlimited
@@ -131,6 +153,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         super.saveAdditional(tag)
         owner?.let { tag.store("owner", UUIDUtil.CODEC, it) }
         tag.putLong("coins", storedCoins)
+        tag.putBoolean("automation", automationEnabled)
         tag.store("prices", Codec.LONG.listOf(), prices.toList())
         ContainerHelper.saveAllItems(tag, offers)
         val stockTag = tag.child("stock")
@@ -143,6 +166,7 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         super.loadAdditional(tag)
         owner = tag.read("owner", UUIDUtil.CODEC).orElse(null)
         storedCoins = tag.getLongOr("coins", 0).coerceAtLeast(0)
+        automationEnabled = tag.getBooleanOr("automation", false)
         val savedPrices = tag.read("prices", Codec.LONG.listOf()).orElse(emptyList())
         for (slot in prices.indices) prices[slot] = savedPrices.getOrElse(slot) { 0 }.coerceAtLeast(0)
         ContainerHelper.loadAllItems(tag, offers)

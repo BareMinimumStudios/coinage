@@ -9,6 +9,6 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public abstract class ItemStackCountMixin {
     @ModifyConstant(method = "*", constant = @Constant(intValue = 99), require = 0)
     private static int coinage$allowHundredCoinStacks(int original) {
-        return 100;
+        return Math.max(original, 100);
     }
 }

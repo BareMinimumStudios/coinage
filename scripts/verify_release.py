@@ -59,11 +59,12 @@ def verify(loader):
             "net/bms/coinage/SetMoneyFunction.class",
         }
         required.update("net/bms/coinage/" + name + ".class" for name in (
-            "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
+            "ShopStock", "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
             "PurseMigration", "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
             "CoinageFabric" if loader == "fabric" else "CoinageNeoForge",
             "CoinageFabricClient" if loader == "fabric" else "CoinageNeoForgeClient",
-            "PurseFabricNetwork" if loader == "fabric" else "PurseNeoForgeNetwork"
+            "PurseFabricNetwork" if loader == "fabric" else "PurseNeoForgeNetwork",
+            "ShopFabricAutomation" if loader == "fabric" else "ShopNeoForgeAutomation"
         ))
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
