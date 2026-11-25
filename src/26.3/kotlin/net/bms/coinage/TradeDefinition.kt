@@ -15,7 +15,7 @@ internal class TradeDefinition private constructor(
     private val stacks: Map<String, ItemStack>
 ) {
     fun create(entity: LivingEntity): MerchantOffer? {
-        val price = CoinAmount.parse((data.get("price") ?: data.get("base_price"))?.asString ?: "200", 1)
+        val price = CoinAmount.parse(priceExpression(data), 1)
             ?: error("Invalid currency expression")
         val money = TradePlatform.currency(price)
         fun stack(name: String): ItemStack = stacks[name]?.copy() ?: error("Missing '$name'")
@@ -76,8 +76,21 @@ internal class TradeDefinition private constructor(
                 require(!stack.isEmpty && stack.count <= stack.maxStackSize) { "Invalid stack: $key" }
                 stacks[key] = stack
             }
+            val requiredStacks = when (type.path) {
+                "sell_stack", "dimension_sell_stack" -> listOf("sell")
+                "buy_stack", "buy_item" -> listOf("buy")
+                "process_item" -> listOf("buy", "sell")
+                "sell_potion_container" -> listOf("container_item")
+                "sell_dyed_armor" -> listOf("item")
+                else -> emptyList()
+            }
+            for (key in requiredStacks) require(key in stacks) { "Missing '$key' stack" }
+            require(CoinAmount.parse(priceExpression(data), 1) != null) { "Invalid currency expression" }
             return TradeDefinition(source, data.deepCopy(), stacks)
         }
+
+        private fun priceExpression(data: JsonObject): String =
+            (data.get("price") ?: data.get("base_price"))?.asString ?: "200"
 
         private val TYPES = setOf("sell_stack", "buy_stack", "buy_item", "sell_tag", "buy_tag",
             "dimension_sell_stack", "process_item", "sell_sus_stew", "sell_dyed_armor",
