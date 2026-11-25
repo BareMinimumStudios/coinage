@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
+import java.math.BigInteger
 import java.util.Locale
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.Commands.argument
@@ -85,6 +86,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                 literal("withdraw")
                     .then(CoinAmountArgument.argument().executes(::withdraw))
             )
+            .then(literal("serverworth").requires { it.hasPermission(2) }.executes(::showServerWorth))
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
                 .then(
@@ -162,6 +164,12 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         if (value < 0) throw invalidAmount.create()
         ledger.setBalance(player.uuid, value)
         return showTargetBalance(context)
+    }
+
+    private fun showServerWorth(context: CommandContext<CommandSourceStack>): Int {
+        val worth = PurseLedger.get(context.source.server).totalBalance()
+        context.source.sendSuccess({ Component.translatable("command.coinage.server_worth", worth.toString()) }, false)
+        return worth.min(BigInteger.valueOf(Int.MAX_VALUE.toLong())).toInt()
     }
 
     private fun showRichest(context: CommandContext<CommandSourceStack>, limit: Int): Int {

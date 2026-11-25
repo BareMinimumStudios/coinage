@@ -14,6 +14,15 @@ class PurseLedgerTest {
     private val recipient = UUID(0, 2)
 
     @Test
+    fun `the sum of player balances can exceed a long`() {
+        val ledger = PurseLedger()
+        assertEquals("0", ledger.totalBalance().toString())
+        ledger.setBalance(sender, Long.MAX_VALUE)
+        ledger.setBalance(recipient, Long.MAX_VALUE)
+        assertEquals("18446744073709551614", ledger.totalBalance().toString())
+    }
+
+    @Test
     fun `invalid transfers preserve both balances`() {
         val ledger = PurseLedger()
         ledger.setBalance(sender, 12)

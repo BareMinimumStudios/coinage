@@ -2,6 +2,7 @@ package net.bms.coinage
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
+import java.math.BigInteger
 import java.util.PriorityQueue
 import java.util.UUID
 import net.minecraft.core.UUIDUtil
@@ -41,6 +42,9 @@ internal class PurseLedger : SavedData() {
         setBalance(to, recipient + amount)
         return true
     }
+
+    fun totalBalance(): BigInteger =
+        balances.values.fold(BigInteger.ZERO) { total, balance -> total + BigInteger.valueOf(balance) }
 
     fun richest(limit: Int): List<Map.Entry<UUID, Long>> {
         val order = compareByDescending<Map.Entry<UUID, Long>> { it.value }.thenBy { it.key }

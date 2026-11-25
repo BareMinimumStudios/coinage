@@ -1,6 +1,7 @@
 {
   "command.coinage.balance": "Purse balance: %s coins",
   "command.coinage.balance.other": "%s has %s coins",
+  "command.coinage.server_worth": "Players hold %s bronze in their purses.",
   "command.coinage.top.empty": "Every purse is empty.",
   "command.coinage.top.entry": "%s. %s has %s coins",
   "command.coinage.amount.invalid": "Enter a valid coin amount or an expression using +, -, and *.",

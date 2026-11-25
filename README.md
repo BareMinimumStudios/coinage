@@ -27,6 +27,7 @@ Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 
 | `/coinage withdraw <amount>` | Withdraw physical coins. |
 | `/coinage bag <amount>` | Put an amount into a money bag. |
 | `/coinage pay <player> <amount>` | Transfer purse funds when player payments are enabled. |
+| `/coinage serverworth` | Total all player purse balances, including offline players. Requires operator permission. |
 | `/coinage top [limit]` | Rank purse balances. Requires operator permission. |
 
 ## Purse funds on death
