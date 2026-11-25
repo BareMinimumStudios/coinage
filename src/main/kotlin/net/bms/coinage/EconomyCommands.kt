@@ -33,7 +33,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
             .then(
                 literal("balance").executes(::showOwnBalance)
                     .then(
-                        argument("player", EntityArgument.player())
+                        argument("player", EntityArgument.players())
                         .requires { it.hasPermission(2) }
                         .executes(::showTargetBalance)
                         .then(literal("get").executes(::showTargetBalance))
@@ -136,34 +136,46 @@ internal class EconomyCommands(private val config: EconomyConfig) {
 
     private fun showTargetBalance(context: CommandContext<CommandSourceStack>): Int {
         val source = context.source
-        val player = EntityArgument.getPlayer(context, "player")
-        val balance = PurseLedger.get(source.server).balance(player.uuid)
-        source.sendSuccess(
-            { Component.translatable("command.coinage.balance.other", player.displayName, balance) },
-            false
-        )
-        return balance.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-    }
-
-    private fun setBalance(context: CommandContext<CommandSourceStack>): Int {
-        val player = EntityArgument.getPlayer(context, "player")
-        PurseLedger.get(context.source.server).setBalance(player.uuid, coinAmount(context, 0))
-        return showTargetBalance(context)
-    }
-
-    private fun adjustBalance(context: CommandContext<CommandSourceStack>, subtract: Boolean): Int {
-        val player = EntityArgument.getPlayer(context, "player")
-        val ledger = PurseLedger.get(context.source.server)
-        val amount = coinAmount(context, 0)
-        val value = try {
-            if (subtract) Math.subtractExact(ledger.balance(player.uuid), amount)
-            else Math.addExact(ledger.balance(player.uuid), amount)
-        } catch (_: ArithmeticException) {
-            throw invalidAmount.create()
+        val ledger = PurseLedger.get(source.server)
+        var total = BigInteger.ZERO
+        for (player in EntityArgument.getPlayers(context, "player")) {
+            val balance = ledger.balance(player.uuid)
+            reportBalance(source, player, balance)
+            total += BigInteger.valueOf(balance)
         }
-        if (value < 0) throw invalidAmount.create()
-        ledger.setBalance(player.uuid, value)
-        return showTargetBalance(context)
+        return total.min(BigInteger.valueOf(Int.MAX_VALUE.toLong())).toInt()
+    }
+
+    private fun setBalance(context: CommandContext<CommandSourceStack>): Int =
+        updateTargetBalances(context) { _, amount -> amount }
+
+    private fun adjustBalance(context: CommandContext<CommandSourceStack>, subtract: Boolean): Int =
+        updateTargetBalances(context) { balance, amount ->
+            if (subtract) Math.subtractExact(balance, amount) else Math.addExact(balance, amount)
+        }
+
+    private fun updateTargetBalances(context: CommandContext<CommandSourceStack>, update: (Long, Long) -> Long): Int {
+        val source = context.source
+        val ledger = PurseLedger.get(source.server)
+        val amount = coinAmount(context, 0)
+        val changes = EntityArgument.getPlayers(context, "player").map { player ->
+            val value = try {
+                update(ledger.balance(player.uuid), amount)
+            } catch (_: ArithmeticException) {
+                throw invalidAmount.create()
+            }
+            if (value < 0) throw invalidAmount.create()
+            player to value
+        }
+        for ((player, balance) in changes) {
+            ledger.setBalance(player.uuid, balance)
+            reportBalance(source, player, balance)
+        }
+        return changes.last().second.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+    }
+
+    private fun reportBalance(source: CommandSourceStack, player: ServerPlayer, balance: Long) {
+        source.sendSuccess({ Component.translatable("command.coinage.balance.other", player.displayName, balance) }, false)
     }
 
     private fun showServerWorth(context: CommandContext<CommandSourceStack>): Int {
