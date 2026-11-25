@@ -14,7 +14,7 @@ case "$target" in
   *) echo "Unknown Minecraft target: $target" >&2; exit 2 ;;
 esac
 for selected in "${targets[@]}"; do
-  bash ./gradlew "-PcoinageTarget=$selected" "$task" --console=plain
+  bash ./gradlew "-PcoinageTarget=$selected" "-PcoinageLoader=$loader" "$task" --console=plain
   if [[ "$loader" == both ]]; then
     COINAGE_TARGET="$selected" python3 scripts/verify_release.py
   else

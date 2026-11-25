@@ -125,5 +125,5 @@ subprojects {
         reproducibleFileOrder = true
     }
 }
-tasks.named('build') { dependsOn ':fabric:build', ':neoforge:build' }
-tasks.named('clean') { dependsOn ':fabric:clean', ':neoforge:clean' }
+tasks.named('build') { dependsOn subprojects.collect { it.path + ':build' } }
+tasks.named('clean') { dependsOn subprojects.collect { it.path + ':clean' } }

@@ -10,7 +10,7 @@ try {
     $targets = if ($Target -eq 'all') { @('1.21.1', '26.3') } else { @($Target) }
     $task = if ($Loader -eq 'both') { 'build' } else { ":${Loader}:build" }
     foreach ($selected in $targets) {
-        & .\gradlew.bat "-PcoinageTarget=$selected" $task --console=plain
+        & .\gradlew.bat "-PcoinageTarget=$selected" "-PcoinageLoader=$Loader" $task --console=plain
         if ($LASTEXITCODE -ne 0) { throw "Build failed for $selected" }
         $env:RELEASE_LOADER = if ($Loader -eq 'both') { $null } else { $Loader }
         $env:COINAGE_TARGET = $selected

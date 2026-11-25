@@ -21,4 +21,15 @@ plugins {
 }
 
 rootProject.name = 'coinage'
-include 'fabric', 'neoforge'
+def loader = providers.gradleProperty('coinageLoader').getOrElse('both')
+switch (loader) {
+    case 'both':
+        include 'fabric', 'neoforge'
+        break
+    case 'fabric':
+    case 'neoforge':
+        include loader
+        break
+    default:
+        throw new GradleException("Unknown Coinage loader: " + loader)
+}
