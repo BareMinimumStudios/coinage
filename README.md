@@ -88,7 +88,7 @@ On **26.3**, you can also use Minecraft's native `villager_trade` and `villager_
 
 ## Mob currency drops
 
-Edit the `[mobDrops]` table in the server's `config/coinage/economy.toml`. Entries set the base value in bronze coins for kills credited to a player.
+Edit the `[mobDrops]` table in the server's `config/coinage/economy.toml`. Entries set the base value in bronze coins for kills credited to a player. The default rule pays 75 bronze for entities in `#coinage:currency_drops`. Datapacks can extend that tag through `data/coinage/tags/entity_type/currency_drops.json`.
 
 ```toml
 [mobDrops]

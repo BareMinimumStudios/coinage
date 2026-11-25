@@ -75,6 +75,7 @@ def verify(loader):
             "net/bms/coinage/SetMoneyFunction.class",
             "data/coinage/advancement/recipes/shop.json",
             "data/coinage/tags/item/coins.json",
+            "data/coinage/tags/entity_type/currency_drops.json",
             "data/coinage/tags/block/piggy_banks.json",
             "data/minecraft/tags/block/mineable/pickaxe.json",
             "data/minecraft/tags/block/needs_stone_tool.json",
