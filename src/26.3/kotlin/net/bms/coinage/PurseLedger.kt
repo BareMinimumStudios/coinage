@@ -3,6 +3,7 @@ package net.bms.coinage
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import java.math.BigInteger
+import java.util.Optional
 import java.util.PriorityQueue
 import java.util.UUID
 import net.minecraft.core.UUIDUtil
@@ -11,6 +12,9 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.saveddata.SavedData
 
 internal class PurseLedger : SavedData() {
+    var shopMarket = ShopMarket()
+        private set
+
     private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
 
@@ -66,10 +70,12 @@ internal class PurseLedger : SavedData() {
                 Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.LONG).fieldOf("balances")
                     .forGetter<PurseLedger> { it.balances.toMap() },
                 UUIDUtil.STRING_CODEC.listOf().optionalFieldOf("auto_collect", emptyList())
-                    .forGetter<PurseLedger> { it.autoCollectPlayers.sorted() }
-            ).apply(instance) { values, autoCollect ->
+                    .forGetter<PurseLedger> { it.autoCollectPlayers.sorted() },
+                ShopMarket.codec.optionalFieldOf("shop_market").forGetter<PurseLedger> { Optional.of(it.shopMarket) }
+            ).apply(instance) { values, autoCollect, market ->
                 PurseLedger().apply {
                     autoCollectPlayers.addAll(autoCollect)
+                    market.ifPresent { shopMarket = it }
                     values.forEach { (id, value) -> if (value > 0) balances[id] = value }
                 }
             }

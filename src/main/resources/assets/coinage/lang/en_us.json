@@ -1,4 +1,5 @@
 {
+  "command.coinage.shop_unavailable": "Shop %s is unavailable.",
   "command.coinage.balance": "Purse balance: %s coins",
   "command.coinage.balance.other": "%s has %s coins",
   "command.coinage.server_worth": "Players hold %s bronze in their purses.",

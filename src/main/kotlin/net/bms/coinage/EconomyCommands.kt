@@ -19,6 +19,7 @@ import net.minecraft.world.phys.BlockHitResult
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         MerchantCommands.register(dispatcher)
+        RemoteShops.register(dispatcher)
         dispatcher.register(literal("coinage").then(literal("autocollect")
             .executes { autoCollect(it, null, toggle = false) }
             .then(literal("toggle").executes { autoCollect(it, null, toggle = true) })

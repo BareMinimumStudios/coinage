@@ -4,6 +4,7 @@ import java.util.UUID
 import java.util.TreeMap
 import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
 import net.minecraft.core.component.DataComponents
@@ -197,13 +198,28 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         return true
     }
 
+    internal fun market(player: ServerPlayer): ShopMarket? {
+        if (CurrencyValues.configuration?.market?.enabled != true) return null
+        val server = player.server
+        val ledger = PurseLedger.get(server)
+        return ledger.shopMarket.also { it.refresh(server.overworld().gameTime, ledger::setDirty) }
+    }
+
+    internal fun quote(offer: ShopOffer, market: ShopMarket?): Long {
+        val expression = CurrencyValues.configuration?.market?.pricePercent ?: return offer.price
+        val item = BuiltInRegistries.ITEM.getKey(offer.stack.item).toString()
+        return market?.quote(item, offer.price, expression) ?: offer.price
+    }
+
     fun trade(player: ServerPlayer, offer: Int): Boolean =
         offers[offer]?.let { trade(player, it) } ?: false
 
-    internal fun trade(player: ServerPlayer, offer: ShopOffer): Boolean {
+    internal fun trade(player: ServerPlayer, offer: ShopOffer, quotedPrice: Long? = null): Boolean {
         if (offers[offer.number] !== offer) return false
         val template = offer.stack
-        val price = offer.price
+        val market = market(player)
+        val price = quote(offer, market)
+        if (quotedPrice != null && price != quotedPrice) return false
         if (template.isEmpty || price <= 0) return false
         val ledger = PurseLedger.get(player.server)
         val balance = ledger.balance(player.uuid)
@@ -235,6 +251,10 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             storedCoins += price
         }
         setChanged()
+        if (market != null && owner != player.uuid) {
+            market.record(BuiltInRegistries.ITEM.getKey(template.item).toString(), if (pawn) -template.count else template.count)
+            ledger.setDirty()
+        }
         player.containerMenu.broadcastChanges()
         return true
     }

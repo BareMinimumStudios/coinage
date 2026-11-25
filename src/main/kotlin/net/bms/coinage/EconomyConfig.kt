@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation
 @Translatable.Name("Economy")
 class EconomyConfig : Config(ResourceLocation.fromNamespaceAndPath(MOD_ID, "economy")) {
     var conversion = CurrencyConfig()
+    var market = MarketConfig()
     var merchantTrades = MerchantTradeConfig()
     @RequiresAction(Action.RELOAD_DATA)
     var chestLoot = ChestLootConfig()

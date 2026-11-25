@@ -5,10 +5,14 @@ import java.util.PriorityQueue
 import java.util.UUID
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtOps
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.saveddata.SavedData
 
 internal class PurseLedger : SavedData() {
+    var shopMarket = ShopMarket()
+        private set
+
     private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
 
@@ -62,6 +66,7 @@ internal class PurseLedger : SavedData() {
         val purseBalances = CompoundTag()
         balances.forEach { (player, balance) -> purseBalances.putLong(player.toString(), balance) }
         tag.put("balances", purseBalances)
+        ShopMarket.codec.encodeStart(NbtOps.INSTANCE, shopMarket).result().ifPresent { tag.put("shop_market", it) }
         val autoCollect = CompoundTag()
         autoCollectPlayers.forEach { autoCollect.putBoolean(it.toString(), true) }
         tag.put("auto_collect", autoCollect)
@@ -93,6 +98,9 @@ internal class PurseLedger : SavedData() {
                 if (autoCollect.getBoolean(key)) {
                     runCatching { UUID.fromString(key) }.getOrNull()?.let(ledger.autoCollectPlayers::add)
                 }
+            }
+            tag.get("shop_market")?.let { saved ->
+                ShopMarket.codec.parse(NbtOps.INSTANCE, saved).result().ifPresent { ledger.shopMarket = it }
             }
             return ledger
         }

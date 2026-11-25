@@ -15,7 +15,7 @@ internal object ShopEditing {
         val code = when {
             previous != null && now - previous < 250_000_000 -> 5
             menu == null || menu.containerId != packet.containerId || !menu.stillValid(player) -> 4
-            !player.isAlive || !menu.shop.canManage(player) -> 1
+            !player.isAlive || !menu.canManage(player) -> 1
             packet.offerNumber < 1 || packet.expression.length > ShopEditPayloads.MAX_EXPRESSION -> 3
             else -> {
                 val price = if (packet.removing) 0L else CoinAmount.parse(packet.expression, 1)
