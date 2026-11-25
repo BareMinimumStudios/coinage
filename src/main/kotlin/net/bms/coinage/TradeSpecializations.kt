@@ -8,11 +8,9 @@ import net.minecraft.tags.EnchantmentTags
 import net.minecraft.tags.TagKey
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.core.HolderSet
-import net.minecraft.network.chat.Component
 import net.minecraft.world.item.MapItem
 import net.minecraft.world.item.alchemy.PotionContents
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData
-import net.minecraft.world.level.saveddata.maps.MapDecorationTypes
 import net.minecraft.world.level.levelgen.structure.Structure
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -57,8 +55,9 @@ internal object TradeSpecializations {
                     entity.blockPosition(), radius, true) ?: return null
                 result = MapItem.create(level, destination.first.x, destination.first.z, 2.toByte(), true, true)
                 MapItem.renderBiomePreviewMap(level, result)
-                MapItemSavedData.addTargetDecoration(result, destination.first, "+", MapDecorationTypes.TARGET_X)
-                result.set(DataComponents.ITEM_NAME, Component.translatable("filled_map.explorer"))
+                val presentation = ExplorerMaps.presentation(destination.second)
+                MapItemSavedData.addTargetDecoration(result, destination.first, "+", presentation.icon)
+                result.set(DataComponents.ITEM_NAME, presentation.name)
                 second = ItemStack(Items.MAP)
             }
             "sell_tag", "buy_tag" -> {

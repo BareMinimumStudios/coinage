@@ -7,6 +7,7 @@ import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
+import net.minecraft.core.component.DataComponents
 import net.minecraft.core.UUIDUtil
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
@@ -221,7 +222,9 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         }
     }
 
-    override fun getDisplayName(): Component = Component.translatable(if (shopBlock.pawn) "container.coinage.pawn_shop" else "container.coinage.shop")
+    override fun getDisplayName(): Component =
+        components().get(DataComponents.CUSTOM_NAME) ?:
+            Component.translatable(if (shopBlock.pawn) "container.coinage.pawn_shop" else "container.coinage.shop")
     override fun createMenu(id: Int, inventory: Inventory, player: Player): AbstractContainerMenu = ShopMenu(id, inventory, this)
 
     override fun saveAdditional(tag: ValueOutput) {

@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.trading.ItemCost
 import net.minecraft.world.item.trading.MerchantOffer
+import net.minecraft.world.level.levelgen.structure.Structure
 import java.util.Optional
 
 internal object TradePlatform {
@@ -24,6 +25,9 @@ internal object TradePlatform {
         else "minecraft:wandering_trader"
 
     fun level(entity: LivingEntity): Int = if (entity is Villager) entity.villagerData.level() else 0
+
+    fun structurePath(structure: Holder<Structure>): String =
+        structure.unwrapKey().orElseThrow().identifier().path
 
     fun cost(stack: ItemStack): ItemCost = ItemCost(stack.typeHolder(), stack.count,
         DataComponentExactPredicate.allOf(stack.componentsPatch.split().added()))

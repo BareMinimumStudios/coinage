@@ -51,6 +51,9 @@ def verify(loader):
             "net/bms/coinage/mixin/MerchantPaymentsMixin.class",
             "net/bms/coinage/CoinageCreative.class",
             "net/bms/coinage/ShopEntity.class",
+            "net/bms/coinage/ExplorerMaps.class",
+            "data/c/tags/worldgen/structure/on_woodland_explorer_maps.json",
+            "data/c/tags/worldgen/structure/end_cities.json",
             "net/bms/coinage/ShopOffer.class",
             "net/bms/coinage/ShopClickGuard.class",
             "net/bms/coinage/ShopEditing.class",
@@ -93,6 +96,15 @@ def verify(loader):
                     raise SystemExit(f"Wrong Java class version in {name}")
             if name.endswith(".json") and name.startswith(("assets/coinage/", "data/coinage/")):
                 json.loads(archive.read(name))
+        woodland_tag = "minecraft:on_woodland_mansion_maps" if target == "26.3" else "minecraft:on_woodland_explorer_maps"
+        expected_tags = {
+            "on_woodland_explorer_maps": ["#" + woodland_tag],
+            "end_cities": ["minecraft:end_city"],
+        }
+        for tag, values in expected_tags.items():
+            path = f"data/c/tags/worldgen/structure/{tag}.json"
+            if json.loads(archive.read(path)) != {"replace": False, "values": values}:
+                raise SystemExit(f"Incorrect shared structure tag for {target}: {tag}")
         for notice in ("LICENSE", "LICENSE-UPSTREAM", "NOTICE.md"):
             packaged = archive.read(notice).replace(b"\r\n", b"\n")
             if packaged != Path(notice).read_bytes().replace(b"\r\n", b"\n"):
@@ -114,6 +126,10 @@ def verify(loader):
         definitions = sum(len(level) for name in profiles for level in json.loads(archive.read(name))["trades"].values())
         if len(profiles) != 14 or definitions != 272:
             raise SystemExit(f"Incomplete default merchant catalog: {len(profiles)} profiles / {definitions} trades")
+        cartographer = json.loads(archive.read("data/coinage/villager_trades/cartographer.json"))
+        ocean_tag = "minecraft:on_ocean_monument_maps" if target == "26.3" else "minecraft:on_ocean_explorer_maps"
+        if cartographer["trades"]["apprentice"][1]["tag"] != ocean_tag:
+            raise SystemExit(f"Incorrect ocean map destination tag for {target}")
         metadata = archive.read(metadata_paths[loader]).decode("utf-8")
         if "${" in metadata:
             raise SystemExit(f"Unexpanded metadata in {loader}")
