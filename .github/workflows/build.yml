@@ -1,0 +1,69 @@
+name: Build Coinage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.target }} / ${{ matrix.loader }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        target: ['1.21.1', '26.3']
+        loader: [fabric, neoforge]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            **/*.gradle
+            gradle/wrapper/gradle-wrapper.properties
+            targets/*.properties
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Build and verify on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/build.ps1 -Loader '${{ matrix.loader }}' -Target '${{ matrix.target }}'
+      - name: Build and verify on Linux
+        if: runner.os != 'Windows'
+        shell: bash
+        run: bash scripts/build.sh '${{ matrix.loader }}' '${{ matrix.target }}'
+      - name: Upload verified JAR
+        uses: actions/upload-artifact@v7
+        with:
+          name: coinage-${{ matrix.target }}-${{ matrix.loader }}-${{ runner.os }}
+          if-no-files-found: error
+          compression-level: 0
+          path: |
+            build/${{ matrix.target }}/${{ matrix.loader }}/libs/coinage-*.jar
+            !build/**/*-sources.jar
+            !build/**/*-unshaded.jar
+            !build/**/*-dev.jar
+            !build/**/*-all.jar
+      - name: Upload test reports
+        if: always() && matrix.loader == 'fabric'
+        uses: actions/upload-artifact@v7
+        with:
+          name: tests-${{ matrix.target }}-${{ runner.os }}
+          if-no-files-found: ignore
+          path: build/${{ matrix.target }}/fabric/reports/tests/

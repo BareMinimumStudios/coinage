@@ -1,8 +1,12 @@
 pluginManagement {
     def target = providers.gradleProperty('coinageTarget').getOrElse('1.21.1')
+    def profile = new File(settingsDir, "targets/${target}.properties")
+    if (!profile.isFile()) throw new GradleException("Unknown Minecraft target ${target}")
+    def pins = new Properties()
+    profile.withReader('UTF-8') { pins.load(it) }
     resolutionStrategy {
         eachPlugin {
-            if (requested.id.id == 'org.jetbrains.kotlin.jvm' && target == '26.3') useVersion('2.4.20')
+            if (requested.id.id == 'org.jetbrains.kotlin.jvm') useVersion(pins.kotlin_version)
         }
     }
     repositories {
@@ -12,5 +16,9 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = 'coinage'
 include 'fabric', 'neoforge'

@@ -7,7 +7,7 @@ modId="coinage"
 version="${version}"
 displayName="Coinage"
 authors="pokesmells, Bare Minimum Studios"
-description="Persistent player purses and economy administration."
+description="A five-tier currency system with player purses, merchant trades, shops, and piggy banks."
 
 [[dependencies.coinage]]
 modId="neoforge"
