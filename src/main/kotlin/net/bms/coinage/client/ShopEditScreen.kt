@@ -141,7 +141,11 @@ internal class ShopEditScreen(private val parent: AbstractContainerScreen<*>) :
 
     override fun isPauseScreen() = false
 
+    // The inherited render calls this after our panel; draw its blur first instead.
+    override fun renderBackground(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {}
+
     override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, partialTick: Float) {
+        super.renderBackground(graphics, mouseX, mouseY, partialTick)
         val left = (width - 288) / 2
         val top = (height - 228) / 2
         graphics.fill(0, 0, width, height, 0x99000000.toInt())

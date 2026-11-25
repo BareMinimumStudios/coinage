@@ -14,6 +14,20 @@ class PursePayloadTest {
     fun clearClientState() { ClientPurseState.reset() }
 
     @Test
+    fun `fresh purse open requests encode without identity checks or payload bytes`() {
+        val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
+        try {
+            repeat(3) {
+                PursePayloads.OPEN_CODEC.encode(buffer, PursePayloads.Open())
+                assertEquals(0, buffer.readableBytes())
+                assertEquals(PursePayloads.OPEN, PursePayloads.OPEN_CODEC.decode(buffer).type())
+            }
+        } finally {
+            buffer.release()
+        }
+    }
+
+    @Test
     fun snapshotPreservesMaximumBalancesAndCustomRatesWithinSeventeenBytes() {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {

@@ -14,7 +14,7 @@ internal object PursePayloads {
     val SNAPSHOT = type<Snapshot>("purse_snapshot")
 
     val HELLO_CODEC = codec({ Hello(it.readVarInt()) }, { buffer, value -> buffer.writeVarInt(value.protocol) })
-    val OPEN_CODEC: StreamCodec<RegistryFriendlyByteBuf, Open> = StreamCodec.unit(Open())
+    val OPEN_CODEC = codec({ Open() }, { _, _ -> })
     val SNAPSHOT_CODEC = codec({ buffer ->
         Snapshot(buffer.readVarLong(), ExchangeRates(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
     }, { buffer, value ->
