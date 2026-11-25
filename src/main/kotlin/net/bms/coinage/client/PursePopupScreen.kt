@@ -152,10 +152,14 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
             graphics.drawString(font, selection[tier].toString(), left + 5, top + 12 + index * 12, 0xFFFFFFFF.toInt(), false)
         }
         if (error.string.isNotEmpty()) {
-            val x = (left - 190).coerceAtLeast(4)
-            val y = top
-            val lines = font.split(error, 180)
-            graphics.fill(x - 3, y - 3, x + 183, y + lines.size * 10 + 3, 0xF21A1A1A.toInt())
+            val spaceLeft = left - 10
+            val spaceRight = width - left - 53
+            val useLeft = spaceLeft >= spaceRight
+            val textWidth = maxOf(spaceLeft, spaceRight).coerceIn(1, 180)
+            val x = if (useLeft) (left - textWidth - 6).coerceAtLeast(4) else left + 49
+            val lines = font.split(error, textWidth)
+            val y = top.coerceIn(4, (height - lines.size * 10 - 4).coerceAtLeast(4))
+            graphics.fill(x - 3, y - 3, x + textWidth + 3, y + lines.size * 10 + 3, 0xF21A1A1A.toInt())
             lines.forEachIndexed { index, line -> graphics.drawString(font, line, x, y + index * 10, 0xFFFFFFFF.toInt()) }
         }
         super.render(graphics, mouseX, mouseY, partialTick)
