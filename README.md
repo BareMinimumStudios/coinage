@@ -94,6 +94,23 @@ To use the tag in this example, add `data/example/tags/entity_type/currency_drop
 
 An exact entity ID takes precedence over a tag, a tag takes precedence over a namespace such as `@example`, and a namespace takes precedence over a mob category such as `€monster`. Add an exact entry with value `0` to exclude one mob. Reload datapacks after editing tags. The economy settings also control random variation, health scaling, and the Looting bonus.
 
+## Money bags in loot tables
+
+Put a `coinage:money_bag` in a loot entry and apply `coinage:set_money` to give it a value in bronze. Coinage preserves other custom item data.
+
+For **1.21.1**, add `{"function":"coinage:set_money","value":250}` to the loot entry's `functions` list. The `value` also accepts a vanilla number provider.
+
+For **26.3**, you can share one reward across multiple tables. Put the number `250` in `data/example/context_int_provider/chest_reward.json`, then create `data/example/item_modifier/money_bag_reward.json`.
+
+```json
+{
+  "type": "coinage:set_money",
+  "value": "example:chest_reward"
+}
+```
+
+Set the money bag loot entry's `"modifier"` to `"example:money_bag_reward"`, or include that reference in its list of modifiers. Change the provider file and reload the datapack to update every table that uses it.
+
 ## Build locally
 
 On Windows, run `./scripts/build.ps1 -Loader both -Target all`. On Linux, run `bash scripts/build.sh both all`. The scripts build each selected target and verify the release JARs in `build/<version>/<loader>/libs/`. Artifact verification requires Python 3.11 or newer.
