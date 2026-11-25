@@ -27,7 +27,7 @@ internal class ShopEditScreen(private val parent: AbstractContainerScreen<*>) :
     private var sentAt = 0L
     private var status = Component.empty()
     private var savedNumber = ShopEditorData.nextOffer(shopMenu.slots[53].item).toString()
-    private var savedPrice = "iron"
+    private var savedPrice = "silver"
     private val existing get() = shopMenu.slots.take(9).map { it.item }.filter { ShopEditorData.offerNumber(it) > 0 }
     private val selected get() = existing.firstOrNull { ShopEditorData.offerNumber(it) == number.value.toIntOrNull() }
     private val currentItem get(): ItemStack = if (useExisting) selected ?: ItemStack.EMPTY
@@ -62,7 +62,7 @@ internal class ShopEditScreen(private val parent: AbstractContainerScreen<*>) :
             .bounds(left + 130, top + 42, 22, 20).build())
         addRenderableWidget(Button.builder(Component.translatable("gui.coinage.new_offer")) {
             number.value = ShopEditorData.nextOffer(shopMenu.slots[53].item).toString()
-            price.value = "iron"
+            price.value = "silver"
             useExisting = false
             updateSource()
         }.bounds(left + 158, top + 42, 118, 20).build())

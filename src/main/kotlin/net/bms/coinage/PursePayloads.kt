@@ -6,24 +6,23 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.resources.ResourceLocation
 
 internal object PursePayloads {
-    const val PROTOCOL = 1
+    const val PROTOCOL = 2
     private fun <T : CustomPacketPayload> type(path: String) =
         CustomPacketPayload.Type<T>(ResourceLocation.fromNamespaceAndPath(MOD_ID, path))
     val HELLO = type<Hello>("purse_hello")
     val OPEN = type<Open>("purse_open")
     val SHOW = type<Show>("purse_show")
     var show: () -> Unit = {}
-    val SNAPSHOT = type<Snapshot>("purse_snapshot")
+    val SNAPSHOT = type<Snapshot>("purse_snapshot_v2")
 
     val HELLO_CODEC = codec({ Hello(it.readVarInt()) }, { buffer, value -> buffer.writeVarInt(value.protocol) })
     val OPEN_CODEC = codec({ Open() }, { _, _ -> })
     val SHOW_CODEC = codec({ Show() }, { _, _ -> })
     val SNAPSHOT_CODEC = codec({ buffer ->
-        Snapshot(buffer.readVarLong(), ExchangeRates(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
+        Snapshot(buffer.readVarLong(), ExchangeRates(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
     }, { buffer, value ->
         buffer.writeVarLong(value.balance)
-        buffer.writeVarInt(value.rates.bronzePerIron)
-        buffer.writeVarInt(value.rates.ironPerSilver)
+        buffer.writeVarInt(value.rates.bronzePerSilver)
         buffer.writeVarInt(value.rates.silverPerGold)
         buffer.writeVarInt(value.rates.goldPerPlatinum)
     })

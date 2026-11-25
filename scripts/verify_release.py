@@ -136,7 +136,7 @@ def verify(loader):
         purse_texture = archive.read("assets/coinage/textures/gui/purse_widget.png")
         if purse_texture[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", purse_texture[16:24]) != (128, 64):
             raise SystemExit("Missing or invalid original purse widget texture")
-        tiers = {"bronze", "iron", "silver", "gold", "platinum"}
+        tiers = {"bronze", "silver", "gold", "platinum"}
         for tier in tiers:
             for suffix in ("", "_0", "_1", "_2", "_3"):
                 texture = f"assets/coinage/textures/item/{tier}_coin{suffix}.png"

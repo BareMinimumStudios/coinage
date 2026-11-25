@@ -26,8 +26,8 @@ internal object PurseDraw {
             region(graphics, x + 23, targetY, 17, sourceY, 20, height)
         }
         band(0, 10, y)
-        repeat(5) { band(10, 12, y + 10 + it * 12) }
-        band(46, 13, y + 70)
+        repeat(CoinTier.entries.size) { band(10, 12, y + 10 + it * 12) }
+        band(46, 13, y + 58)
         for ((index, tier) in CoinTier.entries.reversed().withIndex()) {
             val row = y + 10 + index * 12
             graphics.fill(x + 33, row + 1, x + 42, row + 11, 0xFFC6C6C6.toInt())

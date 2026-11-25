@@ -13,7 +13,7 @@ class PurseWithdrawPayloadTest {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {
             for (bag in listOf(false, true)) {
-                val request = PurseWithdrawPayloads.Selected(100, Int.MAX_VALUE, listOf(100, 2, 0, 1, 0), bag)
+                val request = PurseWithdrawPayloads.Selected(100, Int.MAX_VALUE, listOf(100, 2, 0, 1), bag)
                 PurseWithdrawPayloads.SELECTED_CODEC.encode(buffer, request)
                 assertEquals(request, PurseWithdrawPayloads.SELECTED_CODEC.decode(buffer))
             }
@@ -30,7 +30,7 @@ class PurseWithdrawPayloadTest {
             buffer.writeVarInt(1)
             buffer.writeVarInt(1)
             buffer.writeByte(101)
-            repeat(4) { buffer.writeByte(0) }
+            repeat(3) { buffer.writeByte(0) }
             buffer.writeBoolean(false)
             assertThrows(RuntimeException::class.java) { PurseWithdrawPayloads.SELECTED_CODEC.decode(buffer) }
             buffer.clear()
@@ -62,7 +62,7 @@ class PurseWithdrawPayloadTest {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {
             for (bag in listOf(false, true)) {
-                val request = PurseWithdrawPayloads.Withdraw(100, Int.MAX_VALUE, "2 * iron + 5 * bronze", bag)
+                val request = PurseWithdrawPayloads.Withdraw(100, Int.MAX_VALUE, "2 * silver + 5 * bronze", bag)
                 PurseWithdrawPayloads.WITHDRAW_CODEC.encode(buffer, request)
                 assertEquals(request, PurseWithdrawPayloads.WITHDRAW_CODEC.decode(buffer))
             }

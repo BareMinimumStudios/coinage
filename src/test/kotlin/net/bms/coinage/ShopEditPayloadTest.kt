@@ -13,7 +13,7 @@ class ShopEditPayloadTest {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {
             val original = ShopEditPayloads.Edit(100, Int.MAX_VALUE, Int.MAX_VALUE,
-                "platinum + 2 * iron + 5", true, false)
+                "platinum + 2 * silver + 5", true, false)
             ShopEditPayloads.EDIT_CODEC.encode(buffer, original)
             assertEquals(original, ShopEditPayloads.EDIT_CODEC.decode(buffer))
             val removal = original.copy(expression = "", removing = true)

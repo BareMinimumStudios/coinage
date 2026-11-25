@@ -19,7 +19,7 @@ internal class PurseAmountScreen(private val parent: AbstractContainerScreen<*>)
     private lateinit var amount: EditBox
     private lateinit var coins: Button
     private lateinit var bag: Button
-    private var savedAmount = "iron"
+    private var savedAmount = "silver"
     private var pending: Int? = null
     private var sentAt = 0L
     private var status = Component.empty()

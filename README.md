@@ -17,7 +17,7 @@ The [target files](targets/) record the versions used to build and test each rel
 
 Press **B**, click the purse icon in your inventory, or run `/coinage purse`. Use the arrows to choose denominations. Hold Shift to adjust by ten. The extraction button withdraws the selected coins, and the bag button puts the selected value into one money bag. Shift-click the purse icon to deposit all currency from your inventory. Shift + Ctrl on the extraction button withdraws the full balance as coins if they fit.
 
-Coins stack to 100. The default rates are 100 bronze to 1 iron, 100 iron to 1 silver, 100 silver to 1 gold, and 100 gold to 1 platinum. Servers can change the four ratios in Fzzy Config. Enter plain amounts in bronze or use expressions such as `2 * iron + 5 * bronze`.
+Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 1 gold, and 100 gold to 1 platinum. Servers can change the three ratios in Fzzy Config. Enter plain amounts in bronze or use expressions such as `2 * silver + 5 * bronze`.
 
 | Command | Use |
 | --- | --- |
@@ -36,6 +36,8 @@ Stock a shop with goods to sell. Fund a pawn shop to buy goods from players. Use
 Server settings use Fzzy Config under `config/coinage/`. Merchant definitions are data driven and can be overridden by datapacks. Use `/coinage trades status` to see the loaded catalog and `/coinage trades reload` to reload it. Client settings include purse button visibility, HUD position, and balance notifications.
 
 Coinage can import supported legacy Numismatic Overhaul purse balances from existing save data. Back up the world before switching. This purse import does not convert old physical coins, blocks, or shop inventories registered under the old mod namespace.
+
+If you tested the earlier five-tier development build, deposit physical coins into purses before upgrading. Iron coins have been removed, and the physical values of silver, gold, and platinum have changed. Purse balances and money bags already store their value in bronze. Update clients and servers together.
 
 ## Build locally
 

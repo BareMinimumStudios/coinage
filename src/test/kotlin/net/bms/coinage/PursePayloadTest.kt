@@ -31,12 +31,12 @@ class PursePayloadTest {
     }
 
     @Test
-    fun snapshotPreservesMaximumBalancesAndCustomRatesWithinSeventeenBytes() {
+    fun snapshotPreservesMaximumBalancesAndCustomRatesWithinFifteenBytes() {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {
-            val original = PursePayloads.Snapshot(Long.MAX_VALUE, ExchangeRates(10_000, 10_000, 10_000, 10_000))
+            val original = PursePayloads.Snapshot(Long.MAX_VALUE, ExchangeRates(10_000, 10_000, 10_000))
             PursePayloads.SNAPSHOT_CODEC.encode(buffer, original)
-            assertTrue(buffer.readableBytes() <= 17)
+            assertTrue(buffer.readableBytes() <= 15)
             assertEquals(original, PursePayloads.SNAPSHOT_CODEC.decode(buffer))
             assertEquals(0, buffer.readableBytes())
         } finally {
@@ -46,7 +46,7 @@ class PursePayloadTest {
 
     @Test
     fun disconnectClearsBothBalanceAndServerRates() {
-        ClientPurseState.accept(PursePayloads.Snapshot(123, ExchangeRates(2, 3, 4, 5)))
+        ClientPurseState.accept(PursePayloads.Snapshot(123, ExchangeRates(2, 3, 4)))
         assertTrue(ClientPurseState.ready)
         ClientPurseState.reset()
         assertFalse(ClientPurseState.ready)
@@ -56,7 +56,7 @@ class PursePayloadTest {
 
     @Test
     fun invalidBalanceCannotReplaceTheLastValidSnapshot() {
-        val valid = PursePayloads.Snapshot(123, ExchangeRates(2, 3, 4, 5))
+        val valid = PursePayloads.Snapshot(123, ExchangeRates(2, 3, 4))
         ClientPurseState.accept(valid)
         ClientPurseState.accept(PursePayloads.Snapshot(-1, ExchangeRates()))
         assertEquals(valid.balance, ClientPurseState.balance)

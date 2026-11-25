@@ -46,16 +46,14 @@ class CoinItem(val tier: CoinTier) : Item(Properties().stacksTo(100)) {
 
 object CoinageItems {
     val bronze = CoinItem(CoinTier.BRONZE)
-    val iron = CoinItem(CoinTier.IRON)
     val silver = CoinItem(CoinTier.SILVER)
     val gold = CoinItem(CoinTier.GOLD)
     val platinum = CoinItem(CoinTier.PLATINUM)
-    val descending = listOf(platinum, gold, silver, iron, bronze)
+    val descending = listOf(platinum, gold, silver, bronze)
     val moneyBag = MoneyBagItem()
     val entries: Map<String, Item> = linkedMapOf(
         "money_bag" to moneyBag,
         "bronze_coin" to bronze,
-        "iron_coin" to iron,
         "silver_coin" to silver,
         "gold_coin" to gold,
         "platinum_coin" to platinum

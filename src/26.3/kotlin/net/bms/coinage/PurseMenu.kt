@@ -72,7 +72,7 @@ internal class PurseMenu(id: Int, inventory: Inventory, private val owner: Serve
         if (slot in 0 until 27) {
             if (type != ContainerInput.PICKUP || button !in 0..1) return
             val success = when (slot) {
-                in 11..15 -> {
+                in 11 until 11 + coins.size -> {
                     val coin = coins[slot - 11]
                     val count = if (button == 0) 1 else 100
                     PurseTransactions.withdraw(owner, coin.denomination * count, coin = coin)

@@ -10,7 +10,7 @@ internal object PurseWithdrawPayloads {
     val WITHDRAW = CustomPacketPayload.Type<Withdraw>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "purse_withdraw"))
     val RESULT = CustomPacketPayload.Type<Result>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "purse_withdraw_result"))
     val QUICK = CustomPacketPayload.Type<Quick>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "purse_quick"))
-    val SELECTED = CustomPacketPayload.Type<Selected>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "purse_selected"))
+    val SELECTED = CustomPacketPayload.Type<Selected>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "purse_selected_v2"))
     var receive: (Result) -> Unit = {}
     val WITHDRAW_CODEC = object : StreamCodec<RegistryFriendlyByteBuf, Withdraw> {
         override fun decode(buffer: RegistryFriendlyByteBuf) = Withdraw(buffer.readVarInt(), buffer.readVarInt(),
@@ -26,11 +26,11 @@ internal object PurseWithdrawPayloads {
         override fun decode(buffer: RegistryFriendlyByteBuf): Selected {
             val container = buffer.readVarInt()
             val request = buffer.readVarInt()
-            val counts = List(5) { buffer.readUnsignedByte().toInt().also { require(it <= 100) } }
+            val counts = List(CoinTier.entries.size) { buffer.readUnsignedByte().toInt().also { require(it <= 100) } }
             return Selected(container, request, counts, buffer.readBoolean())
         }
         override fun encode(buffer: RegistryFriendlyByteBuf, value: Selected) {
-            require(value.counts.size == 5 && value.counts.all { it in 0..100 })
+            require(value.counts.size == CoinTier.entries.size && value.counts.all { it in 0..100 })
             buffer.writeVarInt(value.containerId)
             buffer.writeVarInt(value.requestId)
             value.counts.forEach(buffer::writeByte)

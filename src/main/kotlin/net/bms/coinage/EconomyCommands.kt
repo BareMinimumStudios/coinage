@@ -100,7 +100,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
 
     private fun showRates(context: CommandContext<CommandSourceStack>): Int {
         val rates = CurrencyValues.current()
-        val ratios = listOf(rates.bronzePerIron, rates.ironPerSilver, rates.silverPerGold, rates.goldPerPlatinum)
+        val ratios = listOf(rates.bronzePerSilver, rates.silverPerGold, rates.goldPerPlatinum)
         for (index in ratios.indices) {
             val lower =
                 Component.translatable("item.coinage." + CoinTier.entries[index].name.lowercase(Locale.ROOT) + "_coin")

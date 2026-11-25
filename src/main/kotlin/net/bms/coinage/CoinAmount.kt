@@ -11,7 +11,7 @@ internal object CoinAmount {
     fun parse(input: String, minimum: Long): Long? {
         val rates = CurrencyValues.current()
         val value = input.trim()
-            .replace(Regex("""\b(bronze|iron|silver|gold|platinum)\b""", RegexOption.IGNORE_CASE)) { match ->
+            .replace(Regex("""\b(bronze|silver|gold|platinum)\b""", RegexOption.IGNORE_CASE)) { match ->
                 rates.value(CoinTier.valueOf(match.value.uppercase(Locale.ROOT))).toString()
             }
         value.toLongOrNull()?.let { return it.takeIf { amount -> amount >= minimum } }
