@@ -94,6 +94,15 @@ def verify(loader):
         ))
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
+        mixin_config = json.loads(archive.read("coinage.mixins.json"))
+        shared_mixins = mixin_config["mixins"]
+        if "CoinPickupMixin" not in shared_mixins:
+            raise SystemExit(f"{loader} is missing the server-side automatic coin pickup hook")
+        mixin_root = mixin_config["package"].replace(".", "/")
+        mixin_classes = {f"{mixin_root}/{name}.class" for side in ("mixins", "client", "server")
+                         for name in mixin_config.get(side, [])}
+        if missing := mixin_classes - names:
+            raise SystemExit(f"{loader} is missing declared mixins: {', '.join(sorted(missing))}")
         forbidden = ("io/wispforest/", "org/ladysnake/cca/", "dev/onyxstudios/cca/",
                      "redempt/crunch/", "net/bms/coinage/internal/crunch/")
         if any(name.startswith(forbidden) for name in names):
