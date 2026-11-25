@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "coinage:bronze_coin",
+    "coinage:silver_coin",
+    "coinage:gold_coin",
+    "coinage:platinum_coin"
+  ]
+}

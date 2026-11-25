@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "coinage:black_piggy_bank",
+    "coinage:blue_piggy_bank",
+    "coinage:brown_piggy_bank",
+    "coinage:cyan_piggy_bank",
+    "coinage:gray_piggy_bank",
+    "coinage:green_piggy_bank",
+    "coinage:light_blue_piggy_bank",
+    "coinage:light_gray_piggy_bank",
+    "coinage:lime_piggy_bank",
+    "coinage:magenta_piggy_bank",
+    "coinage:orange_piggy_bank",
+    "coinage:piggy_bank",
+    "coinage:pink_piggy_bank",
+    "coinage:purple_piggy_bank",
+    "coinage:red_piggy_bank",
+    "coinage:white_piggy_bank",
+    "coinage:yellow_piggy_bank"
+  ]
+}

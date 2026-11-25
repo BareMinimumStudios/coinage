@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_coin": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "#coinage:coins"
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipes": "coinage:shop"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_coin",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "coinage:shop"
+    ]
+  }
+}

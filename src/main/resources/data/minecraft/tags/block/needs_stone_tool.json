@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "coinage:shop",
+    "coinage:pawn_shop",
+    "coinage:inexhaustible_shop",
+    "coinage:inexhaustible_pawn_shop"
+  ]
+}
