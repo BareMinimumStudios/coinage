@@ -27,7 +27,9 @@ internal object PursePopupClient {
     fun anchor(screen: AbstractContainerScreen<*>): Pair<Int, Int> {
         val access = screen as ContainerScreenAccessor
         val offset = if (screen is CreativeModeInventoryScreen) 38 else access.`coinage$getWidth`() - 16
-        return access.`coinage$getLeft`() + offset to access.`coinage$getTop`() + 5
+        val x = (access.`coinage$getLeft`() + offset).coerceIn(0, (screen.width - 11).coerceAtLeast(0))
+        val y = (access.`coinage$getTop`() + 5).coerceIn(0, (screen.height - 13).coerceAtLeast(0))
+        return x to y
     }
 
     fun open(screen: Screen? = Minecraft.getInstance().gui.screen()): Boolean {
