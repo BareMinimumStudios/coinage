@@ -10,7 +10,7 @@ object MerchantPayments {
     fun autofill(merchant: Merchant, inputs: Container, selected: Int) {
         if (CurrencyValues.configuration?.merchantPursePayments != true) return
         val player = merchant.tradingPlayer as? ServerPlayer ?: return
-        val offers = merchant.offers
+        val offers = EasyNpcMarket.offers(merchant, merchant.offers)
         if (selected !in offers.indices) return
         val offer = offers[selected]
         if (offer.isOutOfStock) return
