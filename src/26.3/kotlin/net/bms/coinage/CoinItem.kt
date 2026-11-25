@@ -31,7 +31,7 @@ class CoinItem(val tier: CoinTier) : Item(CoinageItems.properties(tier.name.lowe
     ): Boolean = CurrencyInteractions.click(self, other, slot, action, player, cursor)
 
     override fun appendHoverText(stack: ItemStack, context: TooltipContext, display: TooltipDisplay, tooltip: Consumer<Component>, flag: TooltipFlag) {
-        tooltip.accept(Component.translatable("tooltip.coinage.value", denomination))
+        tooltip.accept(Component.translatable("tooltip.coinage.value", denomination * stack.count))
     }
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResult {
         val stack = player.getItemInHand(hand)

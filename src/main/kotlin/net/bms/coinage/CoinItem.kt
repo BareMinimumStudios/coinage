@@ -22,7 +22,7 @@ class CoinItem(val tier: CoinTier) : Item(Properties().stacksTo(100)) {
         tooltip: MutableList<Component>,
         flag: TooltipFlag
     ) {
-        tooltip.add(Component.translatable("tooltip.coinage.value", denomination))
+        tooltip.add(Component.translatable("tooltip.coinage.value", denomination * stack.count))
     }
 
     override fun overrideOtherStackedOnMe(
