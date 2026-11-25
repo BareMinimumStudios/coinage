@@ -1,5 +1,7 @@
 package net.bms.coinage
 
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
@@ -51,7 +53,11 @@ internal class PurseMenu(id: Int, inventory: Inventory, private val owner: Serve
         }
         display.setItem(21, named(ItemStack(Items.HOPPER), "gui.coinage.deposit_all"))
         display.setItem(23, named(ItemStack(CoinageItems.moneyBag), "gui.coinage.bag_all"))
-        display.setItem(26, named(ItemStack(Items.PAPER), "gui.coinage.purse_help"))
+        display.setItem(26, named(ItemStack(Items.PAPER), "gui.coinage.purse_help").apply {
+            val tag = CompoundTag()
+            tag.putBoolean("coinage_purse", true)
+            set(DataComponents.CUSTOM_DATA, CustomData.of(tag))
+        })
     }
 
     override fun broadcastChanges() {

@@ -1,5 +1,6 @@
 package net.bms.coinage
 
+import net.bms.coinage.client.PurseAmountClient
 import net.bms.coinage.client.PurseClient
 import net.bms.coinage.client.ShopClient
 import net.minecraft.client.Minecraft
@@ -18,8 +19,10 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor
 @Mod(value = MOD_ID, dist = [Dist.CLIENT])
 class CoinageNeoForgeClient(modBus: IEventBus) {
     init {
-        modBus.addListener { event: FMLClientSetupEvent -> event.enqueueWork { PurseClient.initialize(); ShopClient.initialize() } }
+        modBus.addListener { event: FMLClientSetupEvent -> event.enqueueWork { PurseClient.initialize(); PurseAmountClient.initialize(); ShopClient.initialize() } }
         modBus.addListener { event: RegisterKeyMappingsEvent -> event.registerCategory(PurseClient.key.category); event.register(PurseClient.key) }
+        PurseAmountClient.available = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.WITHDRAW) == true }
+        PurseAmountClient.send = { ClientPacketDistributor.sendToServer(it) }
         ShopClient.available = { Minecraft.getInstance().connection?.hasChannel(ShopEditPayloads.EDIT) == true }
         ShopClient.send = { ClientPacketDistributor.sendToServer(it) }
         PurseClient.requestOpen = {
@@ -32,11 +35,12 @@ class CoinageNeoForgeClient(modBus: IEventBus) {
                 ClientPacketDistributor.sendToServer(PursePayloads.Hello())
         }
         NeoForge.EVENT_BUS.addListener { event: ClientPlayerNetworkEvent.LoggingOut -> PurseClient.reset() }
-        NeoForge.EVENT_BUS.addListener { event: ClientTickEvent.Post -> PurseClient.tick(); ShopClient.tick() }
+        NeoForge.EVENT_BUS.addListener { event: ClientTickEvent.Post -> PurseClient.tick(); PurseAmountClient.tick(); ShopClient.tick() }
         NeoForge.EVENT_BUS.addListener { event: RenderGuiEvent.Post -> PurseClient.render(event.guiGraphics) }
         NeoForge.EVENT_BUS.addListener { event: ScreenEvent.Init.Post ->
             PurseClient.inventoryButtons(event.screen).forEach(event::addListener)
             ShopClient.buttons(event.screen).forEach(event::addListener)
+            PurseAmountClient.buttons(event.screen).forEach(event::addListener)
         }
     }
 }

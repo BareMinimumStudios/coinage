@@ -8,6 +8,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
 internal object CoinageFabricNetwork {
     fun register() {
+        PayloadTypeRegistry.serverboundPlay().register(PurseWithdrawPayloads.WITHDRAW, PurseWithdrawPayloads.WITHDRAW_CODEC)
+        PayloadTypeRegistry.clientboundPlay().register(PurseWithdrawPayloads.RESULT, PurseWithdrawPayloads.RESULT_CODEC)
+        PurseWithdrawal.send = { player, reply ->
+            if (ServerPlayNetworking.canSend(player, PurseWithdrawPayloads.RESULT)) ServerPlayNetworking.send(player, reply)
+        }
+        ServerPlayNetworking.registerGlobalReceiver(PurseWithdrawPayloads.WITHDRAW) { packet, context ->
+            context.server().execute { PurseWithdrawal.withdraw(context.player(), packet) }
+        }
         PayloadTypeRegistry.serverboundPlay().register(ShopEditPayloads.EDIT, ShopEditPayloads.EDIT_CODEC)
         PayloadTypeRegistry.clientboundPlay().register(ShopEditPayloads.RESULT, ShopEditPayloads.RESULT_CODEC)
         ShopEditing.send = { player, reply ->

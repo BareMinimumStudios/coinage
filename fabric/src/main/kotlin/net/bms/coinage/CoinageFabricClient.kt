@@ -1,5 +1,6 @@
 package net.bms.coinage
 
+import net.bms.coinage.client.PurseAmountClient
 import net.bms.coinage.client.PurseClient
 import net.bms.coinage.client.ShopClient
 import net.fabricmc.api.ClientModInitializer
@@ -13,8 +14,13 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens
 
 object CoinageFabricClient : ClientModInitializer {
     override fun onInitializeClient() {
-        PurseClient.initialize()
+        PurseClient.initialize(); PurseAmountClient.initialize()
         ShopClient.initialize()
+        PurseAmountClient.available = { ClientPlayNetworking.canSend(PurseWithdrawPayloads.WITHDRAW) }
+        PurseAmountClient.send = { ClientPlayNetworking.send(it) }
+        ClientPlayNetworking.registerGlobalReceiver(PurseWithdrawPayloads.RESULT) { packet, context ->
+            context.client().execute { PurseWithdrawPayloads.receive(packet) }
+        }
         ShopClient.available = { ClientPlayNetworking.canSend(ShopEditPayloads.EDIT) }
         ShopClient.send = { ClientPlayNetworking.send(it) }
         ClientPlayNetworking.registerGlobalReceiver(ShopEditPayloads.RESULT) { packet, context ->
@@ -32,11 +38,11 @@ object CoinageFabricClient : ClientModInitializer {
             if (ClientPlayNetworking.canSend(PursePayloads.HELLO)) ClientPlayNetworking.send(PursePayloads.Hello())
         }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> PurseClient.reset() }
-        ClientTickEvents.END_CLIENT_TICK.register { PurseClient.tick(); ShopClient.tick() }
+        ClientTickEvents.END_CLIENT_TICK.register { PurseClient.tick(); PurseAmountClient.tick(); ShopClient.tick() }
         HudRenderCallback.EVENT.register { graphics, _ -> PurseClient.render(graphics) }
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             val buttons = PurseClient.inventoryButtons(screen)
-            val shopButtons = ShopClient.buttons(screen)
+            val shopButtons = ShopClient.buttons(screen) + PurseAmountClient.buttons(screen)
             Screens.getButtons(screen).addAll(buttons)
             Screens.getButtons(screen).addAll(shopButtons)
             ScreenEvents.afterTick(screen).register {

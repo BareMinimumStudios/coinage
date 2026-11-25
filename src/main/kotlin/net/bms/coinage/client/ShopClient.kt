@@ -9,7 +9,6 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
-import net.minecraft.world.inventory.MenuType
 
 internal object ShopClient {
     var send: (ShopEditPayloads.Edit) -> Unit = {}
@@ -28,7 +27,7 @@ internal object ShopClient {
     fun nextRequest(): Int = ++requestId
 
     fun buttons(screen: Screen): List<Button> {
-        if (screen !is AbstractContainerScreen<*> || screen.menu.type != MenuType.GENERIC_9x6 || screen.menu.slots.size != 90)
+        if (screen !is AbstractContainerScreen<*> || screen.menu.slots.size != 90)
             return emptyList()
         return listOf(Button.builder(Component.translatable("gui.coinage.edit_offers")) {
             if (available() && ShopEditorData.canManage(screen.menu.slots[53].item))

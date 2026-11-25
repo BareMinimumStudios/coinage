@@ -74,6 +74,7 @@ def verify(loader):
             "net/bms/coinage/SetMoneyFunction.class",
         }
         required.update("net/bms/coinage/" + name + ".class" for name in (
+            "PurseWithdrawal", "PurseWithdrawPayloads", "client/PurseAmountClient", "client/PurseAmountScreen",
             "ShopStock", "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
             "PurseMigration", "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
             "CoinageFabric" if loader == "fabric" else "CoinageNeoForge",
