@@ -30,7 +30,21 @@ internal object PurseDraw {
         for ((index, tier) in CoinTier.entries.reversed().withIndex()) {
             val row = y + 10 + index * 12
             graphics.fill(x + 33, row + 1, x + 42, row + 11, 0xFFC6C6C6.toInt())
-            graphics.blit(coins.getValue(tier), x + 33, row + 2, 8, 8, 0f, 0f, 16, 16, 16, 16)
+            val spriteWidth = when (tier) {
+                CoinTier.BRONZE, CoinTier.SILVER -> 7
+                CoinTier.GOLD -> 8
+                CoinTier.PLATINUM -> 9
+            }
+            val spriteHeight = when (tier) {
+                CoinTier.BRONZE -> 7
+                CoinTier.SILVER, CoinTier.GOLD -> 8
+                CoinTier.PLATINUM -> 9
+            }
+            val u = if (spriteWidth == 7) 5f else 4f
+            val v = if (tier == CoinTier.BRONZE) 5f else 4f
+            val spriteX = x + 33 + (9 - spriteWidth) / 2
+            val spriteY = row + (12 - spriteHeight) / 2
+            graphics.blit(coins.getValue(tier), spriteX, spriteY, u, v, spriteWidth, spriteHeight, 16, 16)
         }
     }
 
