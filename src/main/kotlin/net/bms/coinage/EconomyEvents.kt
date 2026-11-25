@@ -2,7 +2,11 @@ package net.bms.coinage
 
 import java.util.IdentityHashMap
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
@@ -61,9 +65,8 @@ internal class EconomyEvents(private val config: EconomyConfig) {
     }
 
     fun onDeath(entity: LivingEntity, source: DamageSource) {
-        val level = entity.level()
+        val level = entity.level() as? ServerLevel ?: return
 
-        if (level.isClientSide) return
 
         if (entity is ServerPlayer) {
             if (level.gameRules.getBoolean(GameRules.RULE_KEEPINVENTORY)) return
@@ -85,7 +88,7 @@ internal class EconomyEvents(private val config: EconomyConfig) {
             return
         }
 
-        if (source.entity !is ServerPlayer) return
+        val killer = source.entity as? ServerPlayer ?: entity.killCredit as? ServerPlayer ?: return
 
         if (!level.gameRules.getBoolean(GameRules.RULE_DOMOBLOOT)) return
 
@@ -93,10 +96,14 @@ internal class EconomyEvents(private val config: EconomyConfig) {
 
         if (base == 0L) return
 
-        val variance = config.mobDropVariancePercent.coerceIn(0, 100) / 100.0
-
-        val amount =
-            (base.toDouble() * (1 - variance + level.random.nextDouble() * variance * 2)).toLong().coerceAtLeast(0)
+        val looting = if (config.lootingBonusPercent > 0) {
+            val enchantment = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING)
+            EnchantmentHelper.getEnchantmentLevel(enchantment, killer)
+        } else 0
+        val amount = MobCurrencyDrops.amount(
+            base, config.mobDropVariancePercent, level.random.nextDouble(), entity.maxHealth.toDouble(),
+            config.scaleMobDropsOnHealth, config.mobHealthDivisor, looting, config.lootingBonusPercent
+        )
 
         if (amount > 0) entity.spawnAtLocation(MoneyBagItem.create(amount))
     }

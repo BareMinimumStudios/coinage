@@ -33,6 +33,23 @@ class EconomyConfig : Config(Identifier.fromNamespaceAndPath(MOD_ID, "economy"))
     var mobDropVariancePercent = 50
         set(value) { field = value.coerceIn(0, 100) }
 
+    @Translatable.Name("Scale mob currency with health")
+    @Translatable.Desc("Multiply mob drops by maximum health divided by 20 and the health divisor.")
+    var scaleMobDropsOnHealth = false
+
+    @Translatable.Name("Mob health divisor")
+    var mobHealthDivisor = 1.0
+        set(value) {
+            field = if (value.isFinite()) value.coerceIn(0.01, 1000.0) else 1.0
+        }
+
+    @Translatable.Name("Looting currency bonus")
+    @Translatable.Desc("Extra currency percentage per Looting level. Set to zero to disable.")
+    var lootingBonusPercent = 25
+        set(value) {
+            field = value.coerceIn(0, 1000)
+        }
+
     companion object {
         fun register(): EconomyConfig = ConfigApi.registerAndLoadConfig(configClass = ::EconomyConfig).also { CurrencyValues.configuration = it }
     }
