@@ -95,7 +95,7 @@ def verify(loader):
         ))
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
-        mixin_files = {"coinage.mixins.json": {"CoinPickupMixin"}}
+        mixin_files = {"coinage.mixins.json": {"CoinPickupMixin", "CoinBundleMixin"}}
         if loader == "fabric":
             mixin_files["coinage.fabric.mixins.json"] = {"YigdInventoryMixin"}
             fabric_metadata = json.loads(archive.read(metadata_paths[loader]))
