@@ -37,6 +37,9 @@ internal object PurseTransactions {
         return amount
     }
 
+    fun withdrawAll(player: ServerPlayer): Boolean =
+        withdraw(player, PurseLedger.get(player.server).balance(player.uuid))
+
     fun withdraw(player: ServerPlayer, amount: Long, bag: Boolean = false, coin: CoinItem? = null): Boolean {
         if (amount <= 0) return false
         val ledger = PurseLedger.get(player.server)

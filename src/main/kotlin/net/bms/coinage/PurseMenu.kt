@@ -98,7 +98,9 @@ internal class PurseMenu(id: Int, inventory: Inventory, private val owner: Serve
     }
 
     companion object {
+        var show: (ServerPlayer) -> Boolean = { false }
         fun open(player: ServerPlayer) {
+            if (show(player)) return
             player.openMenu(SimpleMenuProvider(
                 { id, inventory, _ -> PurseMenu(id, inventory, player) },
                 Component.translatable("container.coinage.purse")

@@ -26,12 +26,14 @@ internal object PurseClient {
     lateinit var config: PurseClientConfig
         private set
     private val numbers = NumberFormat.getIntegerInstance(Locale.ROOT)
-    private var purseButton: Button? = null
     private var revision = -1L
     private var previousBalance: Long? = null
     private var entries = emptyList<Pair<ItemStack, String>>()
 
-    fun initialize() { config = PurseClientConfig.register() }
+    fun initialize() {
+        config = PurseClientConfig.register()
+        net.bms.coinage.PursePayloads.show = { PursePopupClient.open() }
+    }
 
     fun reset() {
         ClientPurseState.reset()
@@ -42,14 +44,14 @@ internal object PurseClient {
 
     fun tick() {
         val client = Minecraft.getInstance()
-        purseButton?.active = ClientPurseState.ready
+        PursePopupClient.tick()
         if (client.player == null) {
             if (ClientPurseState.ready) reset()
             while (key.consumeClick()) { }
             return
         }
         while (key.consumeClick()) {
-            if (ClientPurseState.ready && (client.gui.screen() == null || client.gui.screen() is InventoryScreen)) requestOpen()
+            if (ClientPurseState.ready) PursePopupClient.open()
         }
         if (!ClientPurseState.ready || revision == ClientPurseState.revision) return
         val balance = ClientPurseState.balance
@@ -78,20 +80,12 @@ internal object PurseClient {
     }
 
     fun inventoryButtons(screen: Screen): List<Button> {
-        if (screen !is InventoryScreen || !config.inventoryButton) return emptyList()
-        return listOf(
-            Button.builder(Component.translatable("container.coinage.purse")) {
-                if (ClientPurseState.ready) requestOpen()
-            }.bounds(screen.width - 82, 6, 54, 20)
-                .tooltip(Tooltip.create(Component.translatable("gui.coinage.open_purse"))).build().apply {
-                    active = ClientPurseState.ready
-                    purseButton = this
-                },
-            Button.builder(Component.literal("...")) {
-                ConfigApiJava.openScreen("coinage")
-            }.bounds(screen.width - 26, 6, 20, 20)
-                .tooltip(Tooltip.create(Component.translatable("gui.coinage.configure"))).build()
-        )
+        val controls = PursePopupClient.buttons(screen)
+        if (screen !is InventoryScreen || !config.inventoryButton) return controls
+        return controls + Button.builder(Component.literal("...")) {
+            ConfigApiJava.openScreen("coinage")
+        }.bounds(screen.width - 26, 6, 20, 20)
+            .tooltip(Tooltip.create(Component.translatable("gui.coinage.configure"))).build()
     }
 
     fun render(graphics: GuiGraphicsExtractor) {

@@ -11,6 +11,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
 
 internal object CoinageNeoForgeNetwork {
     fun register(bus: IEventBus) {
+        PurseMenu.show = { player ->
+            val available = player.connection.hasChannel(PursePayloads.SHOW)
+            if (available) PacketDistributor.sendToPlayer(player, PursePayloads.Show())
+            available
+        }
         PurseWithdrawal.send = { player, reply ->
             if (player.connection.hasChannel(PurseWithdrawPayloads.RESULT)) PacketDistributor.sendToPlayer(player, reply)
         }
@@ -22,6 +27,12 @@ internal object CoinageNeoForgeNetwork {
         }
         bus.addListener { event: RegisterPayloadHandlersEvent ->
             val registrar = event.registrar(PursePayloads.PROTOCOL.toString()).optional()
+            registrar.playToServer(PurseWithdrawPayloads.QUICK, PurseWithdrawPayloads.QUICK_CODEC) { packet, context ->
+                context.enqueueWork { PurseWithdrawal.quick(context.player() as ServerPlayer, packet) }
+            }
+            registrar.playToClient(PursePayloads.SHOW, PursePayloads.SHOW_CODEC) { _, context ->
+                context.enqueueWork { PursePayloads.show() }
+            }
             registrar.playToServer(PurseWithdrawPayloads.WITHDRAW, PurseWithdrawPayloads.WITHDRAW_CODEC) { packet, context ->
                 context.enqueueWork { PurseWithdrawal.withdraw(context.player() as ServerPlayer, packet) }
             }

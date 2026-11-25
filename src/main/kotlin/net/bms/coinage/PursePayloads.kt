@@ -11,10 +11,13 @@ internal object PursePayloads {
         CustomPacketPayload.Type<T>(ResourceLocation.fromNamespaceAndPath(MOD_ID, path))
     val HELLO = type<Hello>("purse_hello")
     val OPEN = type<Open>("purse_open")
+    val SHOW = type<Show>("purse_show")
+    var show: () -> Unit = {}
     val SNAPSHOT = type<Snapshot>("purse_snapshot")
 
     val HELLO_CODEC = codec({ Hello(it.readVarInt()) }, { buffer, value -> buffer.writeVarInt(value.protocol) })
     val OPEN_CODEC = codec({ Open() }, { _, _ -> })
+    val SHOW_CODEC = codec({ Show() }, { _, _ -> })
     val SNAPSHOT_CODEC = codec({ buffer ->
         Snapshot(buffer.readVarLong(), ExchangeRates(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
     }, { buffer, value ->
@@ -32,6 +35,7 @@ internal object PursePayloads {
         }
 
     data class Hello(val protocol: Int = PROTOCOL) : CustomPacketPayload { override fun type() = HELLO }
+    class Show : CustomPacketPayload { override fun type() = SHOW }
     class Open : CustomPacketPayload { override fun type() = OPEN }
     data class Snapshot(val balance: Long, val rates: ExchangeRates) : CustomPacketPayload { override fun type() = SNAPSHOT }
 }

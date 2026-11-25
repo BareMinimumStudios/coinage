@@ -18,6 +18,8 @@
     "defaultRequire": 1
   },
   "client": [
-    "CoinModelPropertyMixin"
+    "CoinModelPropertyMixin",
+    "ContainerScreenAccessor",
+    "CreativeScreenAccessor"
   ]
 }

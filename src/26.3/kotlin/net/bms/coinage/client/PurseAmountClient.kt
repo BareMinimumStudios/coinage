@@ -19,7 +19,12 @@ internal object PurseAmountClient {
 
     fun initialize() {
         PurseWithdrawPayloads.receive = { reply ->
-            (Minecraft.getInstance().gui.screen() as? PurseAmountScreen)?.receive(reply)
+            when (val screen = Minecraft.getInstance().gui.screen()) {
+                is PursePopupScreen -> screen.receive(reply)
+                is PurseAmountScreen -> screen.receive(reply)
+                else -> if (reply.code != 0) Minecraft.getInstance().gui.hud.setOverlayMessage(
+                    Component.translatable("gui.coinage.purse_withdraw_error_" + reply.code), false)
+            }
         }
     }
 

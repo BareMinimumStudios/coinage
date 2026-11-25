@@ -1,6 +1,7 @@
 package net.bms.coinage
 
 import net.bms.coinage.client.PurseAmountClient
+import net.bms.coinage.client.PursePopupClient
 import net.bms.coinage.client.PurseClient
 import net.bms.coinage.client.ShopClient
 import net.fabricmc.api.ClientModInitializer
@@ -16,6 +17,11 @@ object CoinageFabricClient : ClientModInitializer {
     override fun onInitializeClient() {
         PurseClient.initialize(); PurseAmountClient.initialize()
         ShopClient.initialize()
+        PursePopupClient.quickAvailable = { ClientPlayNetworking.canSend(PurseWithdrawPayloads.QUICK) }
+        PursePopupClient.quick = { ClientPlayNetworking.send(it) }
+        ClientPlayNetworking.registerGlobalReceiver(PursePayloads.SHOW) { _, context ->
+            context.client().execute { PursePayloads.show() }
+        }
         PurseAmountClient.available = { ClientPlayNetworking.canSend(PurseWithdrawPayloads.WITHDRAW) }
         PurseAmountClient.send = { ClientPlayNetworking.send(it) }
         ClientPlayNetworking.registerGlobalReceiver(PurseWithdrawPayloads.RESULT) { packet, context ->
@@ -45,9 +51,6 @@ object CoinageFabricClient : ClientModInitializer {
             val shopButtons = ShopClient.buttons(screen) + PurseAmountClient.buttons(screen)
             Screens.getButtons(screen).addAll(buttons)
             Screens.getButtons(screen).addAll(shopButtons)
-            ScreenEvents.afterTick(screen).register {
-                buttons.firstOrNull()?.active = ClientPurseState.ready
-            }
         }
     }
 }

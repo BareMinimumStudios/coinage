@@ -74,7 +74,9 @@ def verify(loader):
             "net/bms/coinage/SetMoneyFunction.class",
         }
         required.update("net/bms/coinage/" + name + ".class" for name in (
-            "PurseWithdrawal", "PurseWithdrawPayloads", "client/PurseAmountClient", "client/PurseAmountScreen",
+            "PurseWithdrawal", "PurseWithdrawPayloads", "PurseSelection", "client/PurseAmountClient", "client/PurseAmountScreen",
+            "client/PursePopupClient", "client/PursePopupScreen", "client/PurseDraw",
+            "mixin/ContainerScreenAccessor", "mixin/CreativeScreenAccessor",
             "ShopStock", "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
             "PurseMigration", "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
             "CoinageFabric" if loader == "fabric" else "CoinageNeoForge",
@@ -110,6 +112,9 @@ def verify(loader):
             packaged = archive.read(notice).replace(b"\r\n", b"\n")
             if packaged != Path(notice).read_bytes().replace(b"\r\n", b"\n"):
                 raise SystemExit(f"{loader} contains a stale {notice}")
+        purse_texture = archive.read("assets/coinage/textures/gui/purse_widget.png")
+        if purse_texture[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", purse_texture[16:24]) != (128, 64):
+            raise SystemExit("Missing or invalid original purse widget texture")
         tiers = {"bronze", "iron", "silver", "gold", "platinum"}
         for tier in tiers:
             for suffix in ("", "_0", "_1", "_2", "_3"):

@@ -123,5 +123,11 @@
   "gui.coinage.purse_withdraw_error_3": "This purse is no longer open.",
   "gui.coinage.purse_withdraw_error_4": "Please wait a moment before trying again.",
   "gui.coinage.purse_withdraw_error_5": "This request has already been handled.",
-  "gui.coinage.purse_withdraw_timeout": "No reply received. Check your balance before trying again."
+  "gui.coinage.purse_withdraw_timeout": "No reply received. Check your balance before trying again.",
+  "gui.coinage.purse_increase": "Add %s",
+  "gui.coinage.purse_decrease": "Remove %s",
+  "gui.coinage.purse_step": "%s: adjust by 1, or hold Shift for 10",
+  "gui.coinage.purse_open_hint": "Open purse / Shift-click to deposit all currency",
+  "gui.coinage.purse_extract_hint": "Withdraw selected coins / Shift + Ctrl: withdraw all",
+  "gui.coinage.purse_bag_hint": "Put the selected amount into a money bag"
 }

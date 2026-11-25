@@ -21,6 +21,9 @@ class PursePayloadTest {
                 PursePayloads.OPEN_CODEC.encode(buffer, PursePayloads.Open())
                 assertEquals(0, buffer.readableBytes())
                 assertEquals(PursePayloads.OPEN, PursePayloads.OPEN_CODEC.decode(buffer).type())
+                PursePayloads.SHOW_CODEC.encode(buffer, PursePayloads.Show())
+                assertEquals(0, buffer.readableBytes())
+                assertEquals(PursePayloads.SHOW, PursePayloads.SHOW_CODEC.decode(buffer).type())
             }
         } finally {
             buffer.release()

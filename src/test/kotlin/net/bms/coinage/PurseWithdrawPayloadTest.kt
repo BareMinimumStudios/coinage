@@ -9,6 +9,21 @@ import org.junit.jupiter.api.Test
 
 class PurseWithdrawPayloadTest {
     @Test
+    fun `quick actions preserve menu and request correlation without carrying inventory data`() {
+        val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
+        try {
+            for (action in listOf(0, 1, Int.MAX_VALUE)) {
+                val request = PurseWithdrawPayloads.Quick(100, Int.MAX_VALUE, action)
+                PurseWithdrawPayloads.QUICK_CODEC.encode(buffer, request)
+                assertEquals(request, PurseWithdrawPayloads.QUICK_CODEC.decode(buffer))
+            }
+            assertEquals(0, buffer.readableBytes())
+        } finally {
+            buffer.release()
+        }
+    }
+
+    @Test
     fun `withdrawals preserve expressions payout type and correlation`() {
         val buffer = RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY)
         try {

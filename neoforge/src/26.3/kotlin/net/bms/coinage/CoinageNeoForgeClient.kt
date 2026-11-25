@@ -1,6 +1,7 @@
 package net.bms.coinage
 
 import net.bms.coinage.client.PurseAmountClient
+import net.bms.coinage.client.PursePopupClient
 import net.bms.coinage.client.PurseClient
 import net.bms.coinage.client.ShopClient
 import net.minecraft.client.Minecraft
@@ -23,6 +24,8 @@ class CoinageNeoForgeClient(modBus: IEventBus) {
         modBus.addListener { event: RegisterKeyMappingsEvent -> event.registerCategory(PurseClient.key.category); event.register(PurseClient.key) }
         PurseAmountClient.available = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.WITHDRAW) == true }
         PurseAmountClient.send = { ClientPacketDistributor.sendToServer(it) }
+        PursePopupClient.quickAvailable = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.QUICK) == true }
+        PursePopupClient.quick = { ClientPacketDistributor.sendToServer(it) }
         ShopClient.available = { Minecraft.getInstance().connection?.hasChannel(ShopEditPayloads.EDIT) == true }
         ShopClient.send = { ClientPacketDistributor.sendToServer(it) }
         PurseClient.requestOpen = {
