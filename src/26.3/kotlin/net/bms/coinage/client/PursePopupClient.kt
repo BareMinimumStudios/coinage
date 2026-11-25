@@ -1,9 +1,8 @@
 package net.bms.coinage.client
 
-import java.text.NumberFormat
-import java.util.Locale
 import net.bms.coinage.ClientPurseState
-import net.bms.coinage.CoinTier
+import net.bms.coinage.CurrencyTooltip
+import net.minecraft.ChatFormatting
 import net.bms.coinage.PurseWithdrawPayloads
 import net.bms.coinage.mixin.ContainerScreenAccessor
 import net.bms.coinage.mixin.CreativeScreenAccessor
@@ -15,8 +14,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.Identifier
-import net.minecraft.network.chat.FontDescription
 import net.minecraft.world.item.CreativeModeTab
 
 internal object PursePopupClient {
@@ -26,7 +23,6 @@ internal object PursePopupClient {
     var quickAvailable: () -> Boolean = { false }
     private var attached: Pair<AbstractContainerScreen<*>, Button>? = null
     private var tooltipRevision = -1L
-    private val numbers = NumberFormat.getIntegerInstance(Locale.ROOT)
 
     fun anchor(screen: AbstractContainerScreen<*>): Pair<Int, Int> {
         val access = screen as ContainerScreenAccessor
@@ -76,22 +72,10 @@ internal object PursePopupClient {
         }
     }
 
-    private val tooltipFont = FontDescription.Resource(Identifier.fromNamespaceAndPath("coinage", "purse_coins"))
-
     fun tooltip(): Component {
-        val tooltip = Component.empty().append(Component.translatable("container.coinage.purse").withStyle(net.minecraft.ChatFormatting.GOLD))
-        var remaining = ClientPurseState.balance
-        for (tier in CoinTier.entries.reversed()) {
-            val unit = ClientPurseState.rates.value(tier)
-            val count = remaining / unit
-            remaining %= unit
-            if (count > 0 || (tier == CoinTier.BRONZE && ClientPurseState.balance == 0L)) {
-                val icon = (0xe000 + tier.ordinal).toChar()
-                val spacing = if (tier == CoinTier.PLATINUM) '\ue005' else '\ue004'
-                tooltip.append(Component.literal("\n"))
-                    .append(Component.literal("$icon$spacing").withStyle { it.withFont(tooltipFont).withColor(0xffffff) })
-                    .append(Component.literal(numbers.format(count)).withStyle(net.minecraft.ChatFormatting.GRAY))
-            }
+        val tooltip = Component.empty().append(Component.translatable("container.coinage.purse").withStyle(ChatFormatting.GOLD))
+        CurrencyTooltip.appendRows(ClientPurseState.balance, ClientPurseState.rates) { row ->
+            tooltip.append(Component.literal("\n")).append(row)
         }
         return tooltip
     }

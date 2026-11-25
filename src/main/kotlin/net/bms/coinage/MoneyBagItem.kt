@@ -23,7 +23,9 @@ class MoneyBagItem : Item(Properties().stacksTo(1)) {
         tooltip: MutableList<Component>,
         flag: TooltipFlag
     ) {
-        tooltip.add(Component.translatable("tooltip.coinage.value", value(stack)))
+        val amount = value(stack)
+        tooltip.add(Component.translatable("tooltip.coinage.value", amount))
+        if (amount > 0L) CurrencyTooltip.appendRows(amount, CurrencyValues.current()) { tooltip.add(it) }
     }
 
     override fun overrideOtherStackedOnMe(

@@ -13,11 +13,11 @@ data class ExchangeRates(
         require(listOf(bronzePerSilver, silverPerGold, goldPerPlatinum).all { it in 2..10_000 })
     }
 
-    fun value(tier: CoinTier): Long {
-        var value = 1L
-        val ratios = intArrayOf(bronzePerSilver, silverPerGold, goldPerPlatinum)
-        for (index in 0 until tier.ordinal) value *= ratios[index]
-        return value
+    fun value(tier: CoinTier): Long = when (tier) {
+        CoinTier.BRONZE -> 1L
+        CoinTier.SILVER -> bronzePerSilver.toLong()
+        CoinTier.GOLD -> bronzePerSilver.toLong() * silverPerGold
+        CoinTier.PLATINUM -> bronzePerSilver.toLong() * silverPerGold * goldPerPlatinum
     }
 }
 

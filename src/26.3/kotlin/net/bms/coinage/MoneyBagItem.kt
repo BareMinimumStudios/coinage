@@ -28,7 +28,9 @@ class MoneyBagItem : Item(CoinageItems.properties("money_bag").stacksTo(1)) {
     ): Boolean = CurrencyInteractions.click(self, other, slot, action, player, cursor)
 
     override fun appendHoverText(stack: ItemStack, context: TooltipContext, display: TooltipDisplay, tooltip: Consumer<Component>, flag: TooltipFlag) {
-        tooltip.accept(Component.translatable("tooltip.coinage.value", value(stack)))
+        val amount = value(stack)
+        tooltip.accept(Component.translatable("tooltip.coinage.value", amount))
+        if (amount > 0L) CurrencyTooltip.appendRows(amount, CurrencyValues.current()) { tooltip.accept(it) }
     }
     override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResult {
         val stack = player.getItemInHand(hand)
