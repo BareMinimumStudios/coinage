@@ -44,7 +44,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                 .then(literal("all").executes(::deposit)))
             .then(literal("rates").executes(::showRates))
             .then(literal("shop")
-                .then(literal("offer").then(argument("slot", IntegerArgumentType.integer(1, 9))
+                .then(literal("offer").then(argument("slot", IntegerArgumentType.integer(1))
                     .then(argument("coins", StringArgumentType.greedyString()).executes(::configureShop))))
                 .then(literal("fund").then(argument("coins", StringArgumentType.greedyString()).executes(::fundShop))))
             .then(literal("bag")

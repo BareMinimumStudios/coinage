@@ -1,11 +1,13 @@
 package net.bms.coinage
 
 import java.util.UUID
+import java.util.TreeMap
 import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtOps
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.WorldlyContainer
@@ -18,6 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import org.slf4j.LoggerFactory
 
 class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.shopType, pos, state), MenuProvider, WorldlyContainer {
     var owner: UUID? = null
@@ -26,11 +29,32 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         private set
     var storedCoins = 0L
         private set
-    val prices = LongArray(9)
-    val offers = NonNullList.withSize(9, ItemStack.EMPTY)
+    private val offers = TreeMap<Int, ShopOffer>()
+    private var cachedOffers: List<ShopOffer>? = null
+    internal var revision = 0L
+        private set
+    internal val pageCount: Int get() = maxOf(1, ((offers.size.toLong() + 8) / 9).toInt())
     val stock = ShopStock(this)
 
     val shopBlock: ShopBlock get() = blockState.block as ShopBlock
+
+    override fun setChanged() {
+        revision++
+        super.setChanged()
+    }
+
+    private fun orderedOffers(): List<ShopOffer> =
+        cachedOffers ?: offers.values.toList().also { cachedOffers = it }
+
+    internal fun pageOffers(page: Int): List<ShopOffer> {
+        val entries = orderedOffers()
+        val start = page.coerceIn(0, pageCount - 1) * 9
+        return entries.subList(start, minOf(start + 9, entries.size)).toList()
+    }
+
+    private fun loadOffer(offer: ShopOffer) {
+        if (!offer.stack.isEmpty && offer.stack.count <= offer.stack.maxStackSize) offers[offer.number] = offer
+    }
 
     fun setAutomation(player: Player, enabled: Boolean): Boolean {
         if (!canManage(player)) return false
@@ -66,9 +90,20 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
     fun canManage(player: Player): Boolean = owner == player.uuid || player.hasPermissions(2)
 
     fun configure(player: Player, slot: Int, price: Long): Boolean {
-        if (!canManage(player) || slot !in 0..8 || price < 0) return false
-        offers[slot] = if (price == 0L) ItemStack.EMPTY else player.mainHandItem.copy()
-        prices[slot] = price
+        if (!canManage(player) || slot < 0 || slot == Int.MAX_VALUE || price < 0) return false
+        if (price == 0L) {
+            if (offers.remove(slot) != null) {
+                cachedOffers = null
+                setChanged()
+            }
+            return true
+        }
+        val stack = player.mainHandItem
+        if (stack.isEmpty || stack.count > stack.maxStackSize) return false
+        val previous = offers[slot]
+        if (previous != null && previous.price == price && ItemStack.matches(previous.stack, stack)) return true
+        offers[slot] = ShopOffer(slot, price, stack.copy())
+        cachedOffers = null
         setChanged()
         return true
     }
@@ -95,10 +130,13 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         return true
     }
 
-    fun trade(player: ServerPlayer, offer: Int): Boolean {
-        if (offer !in 0..8) return false
-        val template = offers[offer]
-        val price = prices[offer]
+    fun trade(player: ServerPlayer, offer: Int): Boolean =
+        offers[offer]?.let { trade(player, it) } ?: false
+
+    internal fun trade(player: ServerPlayer, offer: ShopOffer): Boolean {
+        if (offers[offer.number] !== offer) return false
+        val template = offer.stack
+        val price = offer.price
         if (template.isEmpty || price <= 0) return false
         val ledger = PurseLedger.get(player.server)
         val balance = ledger.balance(player.uuid)
@@ -143,8 +181,8 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         owner?.let { tag.putUUID("owner", it) }
         tag.putLong("coins", storedCoins)
         tag.putBoolean("automation", automationEnabled)
-        tag.putLongArray("prices", prices)
-        ContainerHelper.saveAllItems(tag, offers, registries)
+        tag.put("offerList", ShopOffer.LIST_CODEC.encodeStart(
+            registries.createSerializationContext(NbtOps.INSTANCE), orderedOffers()).getOrThrow())
         val stockTag = CompoundTag()
         ContainerHelper.saveAllItems(stockTag, NonNullList.withSize(27, ItemStack.EMPTY).also { list ->
             for (slot in list.indices) list[slot] = stock.getItem(slot)
@@ -157,11 +195,30 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         owner = if (tag.hasUUID("owner")) tag.getUUID("owner") else null
         storedCoins = tag.getLong("coins").coerceAtLeast(0)
         automationEnabled = tag.getBoolean("automation")
-        val savedPrices = tag.getLongArray("prices")
-        for (slot in prices.indices) prices[slot] = savedPrices.getOrElse(slot) { 0 }.coerceAtLeast(0)
-        ContainerHelper.loadAllItems(tag, offers, registries)
+        offers.clear()
+        cachedOffers = null
+        if (tag.contains("offerList", 9)) {
+            val ops = registries.createSerializationContext(NbtOps.INSTANCE)
+            for (encoded in tag.getList("offerList", 10)) {
+                ShopOffer.CODEC.parse(ops, encoded).resultOrPartial {
+                    LOGGER.warn("Ignored an invalid shop offer at {}: {}", blockPos, it)
+                }.ifPresent(::loadOffer)
+            }
+        } else {
+            val oldPrices = tag.getLongArray("prices")
+            val oldOffers = NonNullList.withSize(9, ItemStack.EMPTY)
+            ContainerHelper.loadAllItems(tag, oldOffers, registries)
+            for (slot in oldOffers.indices) {
+                val price = oldPrices.getOrElse(slot) { 0 }
+                if (price > 0) loadOffer(ShopOffer(slot, price, oldOffers[slot]))
+            }
+        }
         val list = NonNullList.withSize(27, ItemStack.EMPTY)
         ContainerHelper.loadAllItems(tag.getCompound("stock"), list, registries)
         for (slot in list.indices) stock.setItem(slot, list[slot])
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger("Coinage/Shops")
     }
 }

@@ -16,6 +16,10 @@ import net.minecraft.world.item.Items
 internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: ShopEntity) :
     AbstractContainerMenu(MenuType.GENERIC_9x6, id) {
     private val display = SimpleContainer(54)
+    private var page = 0
+    private var shownPage = -1
+    private var shownRevision = -1L
+    private var shownOffers = emptyList<ShopOffer>()
 
     init {
         for (slot in 0 until 54) {
@@ -41,14 +45,27 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
     }
 
     private fun updateDisplay() {
+        page = page.coerceIn(0, shop.pageCount - 1)
+        if (shownPage == page && shownRevision == shop.revision) return
+        shownPage = page
+        shownRevision = shop.revision
+        shownOffers = shop.pageOffers(page)
         for (slot in 0..8) {
-            val item = shop.offers[slot].copy()
-            if (!item.isEmpty) item.set(
-                DataComponents.CUSTOM_NAME,
-                Component.translatable("gui.coinage.offer", shop.offers[slot].hoverName, shop.prices[slot])
-            )
+            val offer = shownOffers.getOrNull(slot)
+            val item = offer?.stack?.copy() ?: ItemStack.EMPTY
+            if (offer != null) item.set(DataComponents.CUSTOM_NAME, Component.translatable(
+                "gui.coinage.numbered_offer", offer.number + 1, offer.stack.hoverName, offer.price))
             display.setItem(slot, item)
         }
+        display.setItem(46, if (page > 0) ItemStack(Items.ARROW).apply {
+            set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.previous_shop_page"))
+        } else ItemStack.EMPTY)
+        display.setItem(48, ItemStack(Items.PAPER).apply {
+            set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.shop_page", page + 1, shop.pageCount))
+        })
+        display.setItem(52, if (page + 1 < shop.pageCount) ItemStack(Items.ARROW).apply {
+            set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.next_shop_page"))
+        } else ItemStack.EMPTY)
         display.setItem(45, ItemStack(Items.HOPPER).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable(
                 if (shop.shopBlock.pawn) "gui.coinage.automation_output" else "gui.coinage.automation_input",
@@ -63,6 +80,12 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
         })
     }
 
+    fun rejectStaleClick(player: ServerPlayer) {
+        updateDisplay()
+        broadcastFullState()
+        player.displayClientMessage(Component.translatable("gui.coinage.shop_changed"), true)
+    }
+
     override fun broadcastChanges() {
         updateDisplay()
         super.broadcastChanges()
@@ -70,22 +93,23 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, private val shop: S
 
     override fun stillValid(player: Player): Boolean =
         shop.level?.getBlockEntity(shop.blockPos) === shop &&
-                player.distanceToSqr(shop.blockPos.x + .5, shop.blockPos.y + .5, shop.blockPos.z + .5) <= 64
+            player.distanceToSqr(shop.blockPos.x + .5, shop.blockPos.y + .5, shop.blockPos.z + .5) <= 64
 
     override fun clicked(slot: Int, button: Int, type: ClickType, player: Player) {
         if (!stillValid(player)) return
         if (slot in 0..8) {
             if (player is ServerPlayer && type == ClickType.PICKUP && button == 0) {
-                if (!shop.trade(
-                        player,
-                        slot
-                    )
-                ) player.displayClientMessage(Component.translatable("gui.coinage.trade_failed"), true)
+                val offer = shownOffers.getOrNull(slot) ?: return
+                if (!shop.trade(player, offer)) player.displayClientMessage(Component.translatable("gui.coinage.trade_failed"), true)
                 broadcastChanges()
             }
             return
         }
         if (slot in 36..53) {
+            if (type == ClickType.PICKUP && button in 0..1) {
+                if (slot == 46) page = if (button == 1) 0 else (page - 1).coerceAtLeast(0)
+                if (slot == 52) page = if (button == 1) shop.pageCount - 1 else (page + 1).coerceAtMost(shop.pageCount - 1)
+            }
             if (slot == 45 && type == ClickType.PICKUP && button == 0) shop.setAutomation(player, !shop.automationEnabled)
             if (slot == 49 && player is ServerPlayer && type == ClickType.PICKUP && button == 0) shop.withdraw(player)
             broadcastChanges()

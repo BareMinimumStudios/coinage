@@ -9,7 +9,8 @@
     "ContainerStackLimitMixin",
     "MerchantPaymentsMixin",
     "MerchantTradesMixin",
-    "MerchantCurrencyMixin"
+    "MerchantCurrencyMixin",
+    "ShopClickGuardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

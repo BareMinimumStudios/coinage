@@ -80,5 +80,10 @@
   "gui.coinage.configure": "Coinage settings",
   "gui.coinage.automation_input": "Hopper input: %s",
   "gui.coinage.automation_output": "Hopper output: %s",
-  "command.coinage.shop.automation": "Shop automation: %s"
+  "command.coinage.shop.automation": "Shop automation: %s",
+  "gui.coinage.numbered_offer": "#%s: %s (%s bronze)",
+  "gui.coinage.previous_shop_page": "Previous page (right-click: first)",
+  "gui.coinage.next_shop_page": "Next page (right-click: last)",
+  "gui.coinage.shop_page": "Page %s / %s",
+  "gui.coinage.shop_changed": "The shop changed. Review the current offer and try again."
 }

@@ -60,7 +60,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                 literal("shop")
                     .then(
                         literal("offer").then(
-                            argument("slot", IntegerArgumentType.integer(1, 9))
+                            argument("slot", IntegerArgumentType.integer(1))
                                 .then(
                                     argument(
                                         "coins",
