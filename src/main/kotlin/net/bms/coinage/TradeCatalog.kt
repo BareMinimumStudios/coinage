@@ -24,8 +24,9 @@ object TradeCatalog {
             try {
                 val root = resource.openAsReader().use { JsonParser.parseReader(it).asJsonObject }
                 val profession = TradePlatform.id(root.get("profession").asString).toString()
-                if (root.get("replace")?.asBoolean == true) next.remove(profession)
-                val levels = next.getOrPut(profession) { linkedMapOf() }
+                val replace = root.get("replace")?.asBoolean == true
+                val levels = linkedMapOf<Int, MutableList<TradeDefinition>>()
+                val rejectedBefore = rejected
                 for ((name, entries) in root.getAsJsonObject("trades").entrySet()) {
                     val level = LEVELS[name] ?: name.toIntOrNull()?.takeIf { it in 1..5 }
                         ?: error("Unknown merchant level '$name'")
@@ -37,6 +38,15 @@ object TradeCatalog {
                             rejected++
                             logger.warn("Rejected trade {}/{}/{}: {}", id, name, index, exception.message)
                         }
+                    }
+                }
+                if (rejected > rejectedBefore && levels.values.all { it.isEmpty() }) continue
+                if (replace) {
+                    next[profession] = levels
+                } else {
+                    val existing = next.getOrPut(profession) { linkedMapOf() }
+                    for ((level, definitions) in levels) {
+                        existing.getOrPut(level) { mutableListOf() }.addAll(definitions)
                     }
                 }
             } catch (exception: Exception) {
