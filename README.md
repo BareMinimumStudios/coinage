@@ -33,9 +33,46 @@ Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 
 
 Stock a shop with goods to sell. Fund a pawn shop to buy goods from players. Use **Edit Offers** in a shop you manage to set templates and prices. The automation toggle controls whether item transfer systems may access the shop's stock. It starts disabled.
 
-Server settings use Fzzy Config under `config/coinage/`. Merchant definitions are data driven and can be overridden by datapacks. Use `/coinage trades status` to see the loaded catalog and `/coinage trades reload` to reload it. Client settings include purse button visibility, HUD position, and balance notifications.
+Server settings use Fzzy Config under `config/coinage/`. Client settings include purse button visibility, HUD position, and balance notifications.
 
 Use the same Coinage version on clients and servers.
+
+## Merchant datapacks
+
+In `config/coinage/economy.toml`, use the `[merchantTrades]` section to choose how Coinage handles newly generated offers.
+
+| Mode | Newly generated offers |
+| --- | --- |
+| `REPLACE` | Use Coinage profiles for the professions they cover. |
+| `APPEND` | Keep native offers and add Coinage offers. Set `convertEmeralds = false` to keep native emerald prices and payouts. |
+| `DISABLED` | Leave offer generation and emerald prices to Minecraft and other mods. |
+
+Use `excludedProfessions` to keep individual professions out of Coinage's trade generation and emerald conversion without changing the mode for other merchants. Existing villagers keep their saved offers when a profile is reloaded.
+
+Both Minecraft targets read Coinage profiles from `data/<namespace>/villager_trades/`. For example, put this file at `data/example/villager_trades/librarian.json` to offer a water potion for 205 bronze at the default exchange rates.
+
+```json
+{
+  "profession": "minecraft:librarian",
+  "replace": true,
+  "trades": {
+    "novice": [
+      {
+        "type": "coinage:sell_stack",
+        "price": "2 * silver + 5",
+        "sell": {
+          "id": "minecraft:potion",
+          "components": {
+            "minecraft:potion_contents": { "potion": "minecraft:water" }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Use `"replace": true` to replace the profession's entire Coinage profile. Omit it to add offers to the existing profile. Run `/reload` after editing a datapack and `/coinage trades status` to check the loaded and rejected definitions.
 
 ## Mob currency drops
 
