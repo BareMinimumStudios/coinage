@@ -142,6 +142,25 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
         return true
     }
 
+    fun fundInventory(player: ServerPlayer): Boolean {
+        if (!canManage(player) || !shopBlock.pawn) return false
+        var amount = 0L
+        val currencySlots = mutableListOf<Int>()
+        for (slot in 0 until player.inventory.containerSize) {
+            val value = PurseTransactions.value(player.inventory.getItem(slot)) ?: return false
+            if (amount > Long.MAX_VALUE - value) return false
+            amount += value
+            if (value > 0) currencySlots.add(slot)
+        }
+        if (amount == 0L || storedCoins > Long.MAX_VALUE - amount) return false
+        for (slot in currencySlots) player.inventory.setItem(slot, ItemStack.EMPTY)
+        storedCoins += amount
+        player.inventory.setChanged()
+        setChanged()
+        player.containerMenu.broadcastChanges()
+        return true
+    }
+
     fun fund(player: ServerPlayer, amount: Long): Boolean {
         if (!canManage(player) || amount <= 0 || storedCoins > Long.MAX_VALUE - amount) return false
         val ledger = PurseLedger.get(player.level().server)

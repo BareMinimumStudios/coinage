@@ -103,5 +103,9 @@
   "gui.coinage.shop_edit_error_3": "Enter a positive offer number and a valid price.",
   "gui.coinage.shop_edit_error_4": "This shop is no longer open or in reach.",
   "gui.coinage.shop_edit_error_5": "Please wait a moment before trying again.",
-  "gui.coinage.shop_edit_timeout": "No response yet. Check your connection and try again."
+  "gui.coinage.shop_edit_timeout": "No response yet. Check your connection and try again.",
+  "gui.coinage.fund_pawn_shop": "Add funds",
+  "gui.coinage.fund_failed": "The shop cannot accept those funds.",
+  "gui.coinage.fund_inventory": "Left-click: add inventory coins and bags",
+  "gui.coinage.fund_purse": "Right-click: add your purse balance"
 }

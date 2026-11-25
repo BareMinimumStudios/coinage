@@ -12,6 +12,7 @@ import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.component.ItemLore
 
 internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: ShopEntity) :
     AbstractContainerMenu(MenuType.GENERIC_9x6, id) {
@@ -74,9 +75,14 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: 
                 Component.translatable(if (shop.automationEnabled) "options.on" else "options.off")
             ))
         })
-        display.setItem(49, ItemStack(Items.GOLD_INGOT).apply {
+        display.setItem(49, if (shop.canManage(viewer)) ItemStack(Items.GOLD_INGOT).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.collect", shop.storedCoins))
-        })
+        } else ItemStack.EMPTY)
+        display.setItem(50, if (shop.shopBlock.pawn && shop.canManage(viewer)) ItemStack(CoinageItems.moneyBag).apply {
+            set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.fund_pawn_shop"))
+            set(DataComponents.LORE, ItemLore(listOf(
+                Component.translatable("gui.coinage.fund_inventory"), Component.translatable("gui.coinage.fund_purse"))))
+        } else ItemStack.EMPTY)
         display.setItem(53, ItemStack(Items.PAPER).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.shop_help"))
             ShopEditorData.markMenu(this, shop.canManage(viewer), shop.nextOfferNumber)
@@ -115,6 +121,12 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: 
             }
             if (slot == 45 && type == ClickType.PICKUP && button == 0) shop.setAutomation(player, !shop.automationEnabled)
             if (slot == 49 && player is ServerPlayer && type == ClickType.PICKUP && button == 0) shop.withdraw(player)
+            if (slot == 50 && player is ServerPlayer && type == ClickType.PICKUP && button in 0..1 &&
+                shop.shopBlock.pawn && shop.canManage(player)) {
+                val success = if (button == 0) shop.fundInventory(player)
+                    else shop.fund(player, PurseLedger.get(player.server).balance(player.uuid))
+                if (!success) player.displayClientMessage(Component.translatable("gui.coinage.fund_failed"), true)
+            }
             broadcastChanges()
             return
         }
