@@ -35,9 +35,7 @@ Stock a shop with goods to sell. Fund a pawn shop to buy goods from players. Use
 
 Server settings use Fzzy Config under `config/coinage/`. Merchant definitions are data driven and can be overridden by datapacks. Use `/coinage trades status` to see the loaded catalog and `/coinage trades reload` to reload it. Client settings include purse button visibility, HUD position, and balance notifications.
 
-Coinage can import supported legacy Numismatic Overhaul purse balances from existing save data. Back up the world before switching. This purse import does not convert old physical coins, blocks, or shop inventories registered under the old mod namespace.
-
-If you tested the earlier five-tier development build, deposit physical coins into purses before upgrading. Iron coins have been removed, and the physical values of silver, gold, and platinum have changed. Purse balances and money bags already store their value in bronze. Update clients and servers together.
+Use the same Coinage version on clients and servers.
 
 ## Build locally
 

@@ -5,5 +5,3 @@ The default villager trade definitions and item tags are adapted from Numismatic
 The default coin, money-bag, piggy-bank, shop, and pawn-shop artwork, models, and piggy-bank breaking sound are adapted from Numismatic Overhaul. Their original MIT copyright and license notice is included in LICENSE-UPSTREAM.
 
 Gold adapts the original silver sprites, and platinum recolors the original gold sprites. Both retain the original 16×16 grid.
-
-The alternate Colorwave coin textures were supplied by the project owner from Colorwave Studio's Coins V2 pack.

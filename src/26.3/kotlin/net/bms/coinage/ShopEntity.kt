@@ -1,15 +1,12 @@
 package net.bms.coinage
 
-import com.mojang.serialization.Codec
 import java.util.UUID
 import java.util.TreeMap
 import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
-import net.minecraft.core.HolderLookup
 import net.minecraft.core.NonNullList
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.UUIDUtil
-import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.server.permissions.Permission
@@ -254,14 +251,6 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
                 val item = entry.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY)
                 if (number >= 0 && number < Int.MAX_VALUE && price > 0) loadOffer(ShopOffer(number, price, item))
                 else LOGGER.warn("Ignored an invalid shop offer at {}", blockPos)
-            }
-        } else {
-            val oldPrices = tag.read("prices", Codec.LONG.listOf()).orElse(emptyList())
-            val oldOffers = NonNullList.withSize(9, ItemStack.EMPTY)
-            ContainerHelper.loadAllItems(tag, oldOffers)
-            for (slot in oldOffers.indices) {
-                val price = oldPrices.getOrElse(slot) { 0 }
-                if (price > 0) loadOffer(ShopOffer(slot, price, oldOffers[slot]))
             }
         }
         val list = NonNullList.withSize(27, ItemStack.EMPTY)

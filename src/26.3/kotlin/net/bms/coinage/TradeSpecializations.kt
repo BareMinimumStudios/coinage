@@ -14,7 +14,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 import net.minecraft.world.level.levelgen.structure.Structure
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.minecraft.world.item.DyeItem
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.item.component.SuspiciousStewEffects

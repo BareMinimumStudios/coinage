@@ -1,6 +1,5 @@
 package net.bms.coinage
 
-import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerLevel

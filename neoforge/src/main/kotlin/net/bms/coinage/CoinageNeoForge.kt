@@ -99,7 +99,6 @@ class CoinageNeoForge(modBus: IEventBus) {
             }
         }
         NeoForge.EVENT_BUS.addListener { event: ServerStartedEvent ->
-            PurseMigration.importSavedBalances(event.server)
             TradeCatalog.reload(event.server)
         }
         NeoForge.EVENT_BUS.addListener { event: OnDatapackSyncEvent ->

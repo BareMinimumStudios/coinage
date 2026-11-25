@@ -3,7 +3,6 @@ package net.bms.coinage
 import net.minecraft.core.Holder
 import net.minecraft.core.registries.Registries
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.tags.TagKey
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.core.component.DataComponentPredicate
 import net.minecraft.core.registries.BuiltInRegistries

@@ -78,7 +78,7 @@ def verify(loader):
             "client/PursePopupClient", "client/PursePopupScreen", "client/PurseDraw",
             "mixin/ContainerScreenAccessor", "mixin/CreativeScreenAccessor",
             "ShopStock", "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
-            "PurseMigration", "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
+            "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
             "CoinageFabric" if loader == "fabric" else "CoinageNeoForge",
             "CoinageFabricClient" if loader == "fabric" else "CoinageNeoForgeClient",
             "CoinageFabricNetwork" if loader == "fabric" else "CoinageNeoForgeNetwork",

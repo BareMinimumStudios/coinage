@@ -69,7 +69,6 @@ object CoinageFabric : ModInitializer {
         val events = EconomyEvents(config)
         ServerLivingEntityEvents.AFTER_DEATH.register(events::onDeath)
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            PurseMigration.importSavedBalances(server)
             TradeCatalog.reload(server)
         }
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, success ->

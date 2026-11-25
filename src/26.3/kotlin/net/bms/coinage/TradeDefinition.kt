@@ -69,19 +69,6 @@ internal class TradeDefinition private constructor(
                         if (has("item")) add("id", remove("item"))
                     }
                 if (!encoded.has("id")) continue
-                if (encoded.has("tag")) {
-                    val legacy = encoded.remove("tag").asJsonObject.deepCopy()
-                    val components = encoded.getAsJsonObject("components") ?: JsonObject().also { encoded.add("components", it) }
-                    val potion = legacy.remove("Potion") ?: legacy.remove("potion")
-                    if (potion != null) {
-                        require(!components.has("minecraft:potion_contents")) { "Conflicting potion components" }
-                        components.add("minecraft:potion_contents", JsonObject().apply { add("potion", potion) })
-                    }
-                    if (legacy.size() > 0) {
-                        require(!components.has("minecraft:custom_data")) { "Conflicting custom_data components" }
-                        components.add("minecraft:custom_data", legacy)
-                    }
-                }
                 val id = TradePlatform.id(encoded.get("id").asString)
                 require(BuiltInRegistries.ITEM.containsKey(id)) { "Unknown item: $id" }
                 encoded.addProperty("id", id.toString())

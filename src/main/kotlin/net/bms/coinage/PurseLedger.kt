@@ -10,23 +10,11 @@ import net.minecraft.world.level.saveddata.SavedData
 internal class PurseLedger : SavedData() {
     private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
-    private val legacyImports = HashSet<UUID>()
-
-    fun hasLegacyImport(player: UUID): Boolean = player in legacyImports
-
-    fun importLegacy(player: UUID, amount: Long): Boolean {
-        require(amount >= 0)
-        if (!legacyImports.add(player)) return false
-        if (balance(player) == 0L && amount > 0) balances[player] = amount
-        setDirty()
-        return true
-    }
 
     fun balance(player: UUID): Long = balances[player] ?: 0L
 
     fun setBalance(player: UUID, balance: Long) {
         require(balance >= 0)
-        if (legacyImports.add(player)) setDirty()
         if (balance == balance(player)) return
         if (balance == 0L) balances.remove(player) else balances[player] = balance
         setDirty()
@@ -61,9 +49,6 @@ internal class PurseLedger : SavedData() {
         val purseBalances = CompoundTag()
         balances.forEach { (player, balance) -> purseBalances.putLong(player.toString(), balance) }
         tag.put("balances", purseBalances)
-        tag.put("legacyImports", CompoundTag().apply {
-            legacyImports.forEach { player -> putBoolean(player.toString(), true) }
-        })
         return tag
     }
 
@@ -86,11 +71,6 @@ internal class PurseLedger : SavedData() {
                 }
                 val balance = balances.getLong(key)
                 if (balance > 0) ledger.balances[player] = balance
-            }
-            val imported = tag.getCompound("legacyImports")
-            for (key in imported.allKeys) {
-                val player = runCatching { UUID.fromString(key) }.getOrNull() ?: continue
-                if (imported.getBoolean(key)) ledger.legacyImports.add(player)
             }
             return ledger
         }

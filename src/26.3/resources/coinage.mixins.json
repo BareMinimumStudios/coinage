@@ -6,7 +6,6 @@
   "mixins": [
     "StackSizeComponentMixin",
     "ItemStackCountMixin",
-    "LegacyCurrencyStackMixin",
     "ContainerStackLimitMixin",
     "MerchantPaymentsMixin",
     "MerchantTradesMixin",

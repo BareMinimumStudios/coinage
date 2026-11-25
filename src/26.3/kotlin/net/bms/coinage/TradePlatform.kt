@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.core.component.DataComponentExactPredicate
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.Identifier
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.npc.villager.Villager

@@ -3,7 +3,7 @@
   "id": "coinage",
   "version": "${version}",
   "name": "Coinage",
-  "description": "A five-tier currency system with player purses, merchant trades, shops, and piggy banks.",
+  "description": "A four-tier currency system with player purses, merchant trades, shops, and piggy banks.",
   "authors": [
     "pokesmells",
     "Bare Minimum Studios"

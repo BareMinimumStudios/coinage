@@ -244,14 +244,6 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
                     LOGGER.warn("Ignored an invalid shop offer at {}: {}", blockPos, it)
                 }.ifPresent(::loadOffer)
             }
-        } else {
-            val oldPrices = tag.getLongArray("prices")
-            val oldOffers = NonNullList.withSize(9, ItemStack.EMPTY)
-            ContainerHelper.loadAllItems(tag, oldOffers, registries)
-            for (slot in oldOffers.indices) {
-                val price = oldPrices.getOrElse(slot) { 0 }
-                if (price > 0) loadOffer(ShopOffer(slot, price, oldOffers[slot]))
-            }
         }
         val list = NonNullList.withSize(27, ItemStack.EMPTY)
         ContainerHelper.loadAllItems(tag.getCompound("stock"), list, registries)
