@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.client.screen.v1.Screens
 
 object CoinageFabricClient : ClientModInitializer {
@@ -52,6 +53,9 @@ object CoinageFabricClient : ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register { PurseClient.tick(); PurseAmountClient.tick(); ShopClient.tick() }
         HudRenderCallback.EVENT.register { graphics, _ -> PurseClient.render(graphics) }
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
+            ScreenKeyboardEvents.allowKeyPress(screen).register { active, code, scanCode, _ ->
+                !PurseClient.openFromContainer(active, code, scanCode)
+            }
             val buttons = PurseClient.inventoryButtons(screen)
             val shopButtons = ShopClient.buttons(screen) + PurseAmountClient.buttons(screen)
             Screens.getButtons(screen).addAll(buttons)

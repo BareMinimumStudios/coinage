@@ -14,6 +14,10 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.MultiLineEditBox
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.network.chat.Component
@@ -51,7 +55,7 @@ internal object PurseClient {
             return
         }
         while (key.consumeClick()) {
-            if (ClientPurseState.ready) PursePopupClient.open()
+            if (ClientPurseState.ready && client.screen == null) PursePopupClient.open()
         }
         if (!ClientPurseState.ready || revision == ClientPurseState.revision) return
         val balance = ClientPurseState.balance
@@ -77,6 +81,14 @@ internal object PurseClient {
             }
         }
         entries = display
+    }
+
+    fun openFromContainer(screen: Screen, keyCode: Int, scanCode: Int): Boolean {
+        if (screen !is AbstractContainerScreen<*> || !key.matches(keyCode, scanCode)) return false
+        var focused = screen.focused
+        while (focused is ContainerEventHandler) focused = focused.focused
+        if (focused is EditBox || focused is MultiLineEditBox) return false
+        return PursePopupClient.open(screen)
     }
 
     fun inventoryButtons(screen: Screen): List<Button> {

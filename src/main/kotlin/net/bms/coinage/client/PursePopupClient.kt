@@ -30,15 +30,16 @@ internal object PursePopupClient {
         return access.`coinage$getLeft`() + offset to access.`coinage$getTop`() + 5
     }
 
-    fun open(screen: Screen? = Minecraft.getInstance().screen) {
+    fun open(screen: Screen? = Minecraft.getInstance().screen): Boolean {
         val client = Minecraft.getInstance()
-        val player = client.player ?: return
-        if (!ClientPurseState.ready || !player.isAlive) return
-        if (screen is PursePopupScreen) { screen.onClose(); return }
+        val player = client.player ?: return false
+        if (!ClientPurseState.ready || !player.isAlive) return false
+        if (screen is PursePopupScreen) { screen.onClose(); return true }
         val parent = if (screen == null) InventoryScreen(player).also { client.setScreen(it) }
-            else screen as? AbstractContainerScreen<*> ?: return
-        if (parent.menu !== client.player?.containerMenu) return
+            else screen as? AbstractContainerScreen<*> ?: return false
+        if (parent.menu !== client.player?.containerMenu) return false
         client.setScreen(PursePopupScreen(parent))
+        return true
     }
 
     fun buttons(screen: Screen): List<Button> {
