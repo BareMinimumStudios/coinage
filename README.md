@@ -74,6 +74,8 @@ Both Minecraft targets read Coinage profiles from `data/<namespace>/villager_tra
 
 Use `"replace": true` to replace the profession's entire Coinage profile. Omit it to add offers to the existing profile. Run `/reload` after editing a datapack and `/coinage trades status` to check the loaded and rejected definitions.
 
+On **26.3**, you can also use Minecraft's native `villager_trade` and `villager_trade_set` registries. Pick `APPEND` to use native trades alongside Coinage profiles, or `DISABLED` to let the native registries control offer generation entirely. Use Coinage profiles on either version for prices such as `2 * silver + 5`, which follow the server's configured exchange rates.
+
 ## Mob currency drops
 
 Edit the `[mobDrops]` table in the server's `config/coinage/economy.toml`. Entries set the base value in bronze coins for kills credited to a player.
