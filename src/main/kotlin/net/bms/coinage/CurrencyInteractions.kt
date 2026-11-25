@@ -43,6 +43,10 @@ internal object CurrencyInteractions {
             return true
         }
         if (action != ClickAction.PRIMARY || other.isEmpty) return false
+        if (item is CoinItem && item.tier == CoinTier.PLATINUM &&
+            ItemStack.isSameItemSameComponents(self, other) && self.count + other.count <= self.maxStackSize
+        ) return false
+
         val ownValue = value(self)
         val otherValue = value(other)
         if (ownValue <= 0 || otherValue <= 0 || ownValue > Long.MAX_VALUE - otherValue) return false
