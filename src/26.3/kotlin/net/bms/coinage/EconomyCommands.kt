@@ -30,11 +30,11 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                     .requires { it.permissions().hasPermission(Permission.HasCommandLevel(PermissionLevel.byId(2))) }
                     .executes(::showTargetBalance)
                     .then(literal("get").executes(::showTargetBalance))
-                    .then(literal("set").then(argument("coins", StringArgumentType.greedyString())
+                    .then(literal("set").then(CoinAmountArgument.argument()
                         .executes(::setBalance)))
-                    .then(literal("add").then(argument("coins", StringArgumentType.greedyString())
+                    .then(literal("add").then(CoinAmountArgument.argument()
                         .executes { adjustBalance(it, false) }))
-                    .then(literal("subtract").then(argument("coins", StringArgumentType.greedyString())
+                    .then(literal("subtract").then(CoinAmountArgument.argument()
                         .executes { adjustBalance(it, true) }))))
             .then(literal("purse").executes {
                 PurseMenu.open(it.source.playerOrException)
@@ -45,19 +45,19 @@ internal class EconomyCommands(private val config: EconomyConfig) {
             .then(literal("rates").executes(::showRates))
             .then(literal("shop")
                 .then(literal("offer").then(argument("slot", IntegerArgumentType.integer(1))
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::configureShop))))
-                .then(literal("fund").then(argument("coins", StringArgumentType.greedyString()).executes(::fundShop))))
+                    .then(CoinAmountArgument.argument().executes(::configureShop))))
+                .then(literal("fund").then(CoinAmountArgument.argument().executes(::fundShop))))
             .then(literal("bag")
-                .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag)))
+                .then(CoinAmountArgument.argument().executes(::makeBag)))
             .then(literal("withdraw")
-                .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw)))
+                .then(CoinAmountArgument.argument().executes(::withdraw)))
             .then(literal("top").requires { it.permissions().hasPermission(Permission.HasCommandLevel(PermissionLevel.byId(2))) }
                 .executes { showRichest(it, 10) }
                 .then(argument("limit", IntegerArgumentType.integer(1, 100))
                     .executes { showRichest(it, IntegerArgumentType.getInteger(it, "limit")) }))
             .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
                 .then(argument("player", EntityArgument.player())
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::pay)))))
+                    .then(CoinAmountArgument.argument().executes(::pay)))))
     }
 
     private fun showRates(context: CommandContext<CommandSourceStack>): Int {
@@ -190,7 +190,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
     }
 
     private fun coinAmount(context: CommandContext<CommandSourceStack>, minimum: Long): Long {
-        return CoinAmount.parse(StringArgumentType.getString(context, "coins"), minimum)
+        return CoinAmount.parse(StringArgumentType.getString(context, CoinAmountArgument.NAME), minimum)
             ?: throw invalidAmount.create()
     }
 

@@ -33,18 +33,18 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                         .then(literal("get").executes(::showTargetBalance))
                         .then(
                             literal("set").then(
-                                argument("coins", StringArgumentType.greedyString())
+                                CoinAmountArgument.argument()
                                     .executes(::setBalance)
                             )
                         )
                         .then(
                             literal("add").then(
-                                argument("coins", StringArgumentType.greedyString())
+                                CoinAmountArgument.argument()
                                     .executes { adjustBalance(it, false) })
                         )
                         .then(
                             literal("subtract").then(
-                                argument("coins", StringArgumentType.greedyString())
+                                CoinAmountArgument.argument()
                                     .executes { adjustBalance(it, true) })
                         )
                     )
@@ -62,29 +62,23 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                         literal("offer").then(
                             argument("slot", IntegerArgumentType.integer(1))
                                 .then(
-                                    argument(
-                                        "coins",
-                                        StringArgumentType.greedyString()
-                                    ).executes(::configureShop)
+                                    CoinAmountArgument.argument().executes(::configureShop)
                                 )
                         )
                     )
                     .then(
                         literal("fund").then(
-                            argument(
-                                "coins",
-                                StringArgumentType.greedyString()
-                            ).executes(::fundShop)
+                            CoinAmountArgument.argument().executes(::fundShop)
                         )
                     )
             )
             .then(
                 literal("bag")
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::makeBag))
+                    .then(CoinAmountArgument.argument().executes(::makeBag))
             )
             .then(
                 literal("withdraw")
-                    .then(argument("coins", StringArgumentType.greedyString()).executes(::withdraw))
+                    .then(CoinAmountArgument.argument().executes(::withdraw))
             )
             .then(literal("top").requires { it.hasPermission(2) }
                 .executes { showRichest(it, 10) }
@@ -94,7 +88,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
             .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
                 .then(
                     argument("player", EntityArgument.player())
-                        .then(argument("coins", StringArgumentType.greedyString()).executes(::pay))
+                        .then(CoinAmountArgument.argument().executes(::pay))
                 )))
     }
 
@@ -253,7 +247,7 @@ internal class EconomyCommands(private val config: EconomyConfig) {
     }
 
     private fun coinAmount(context: CommandContext<CommandSourceStack>, minimum: Long): Long {
-        return CoinAmount.parse(StringArgumentType.getString(context, "coins"), minimum)
+        return CoinAmount.parse(StringArgumentType.getString(context, CoinAmountArgument.NAME), minimum)
             ?: throw invalidAmount.create()
     }
 

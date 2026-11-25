@@ -17,7 +17,7 @@ The [target files](targets/) record the versions used to build and test each rel
 
 Press **B**, click the purse icon in your inventory, or run `/coinage purse`. Use the arrows to choose denominations. Hold Shift to adjust by ten. The extraction button withdraws the selected coins, and Ctrl-clicking it puts the selected value into one money bag. Shift-click the purse icon to deposit all currency from your inventory. Shift + Ctrl on the extraction button withdraws the full balance as coins if they fit.
 
-Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 1 gold, and 100 gold to 1 platinum. Servers can change the three ratios in Fzzy Config. Enter plain amounts in bronze or use expressions such as `2 * silver + 5 * bronze`.
+Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 1 gold, and 100 gold to 1 platinum. Servers can change the three ratios in Fzzy Config. Enter plain amounts in bronze or use expressions such as `2 * silver + 5 * bronze`. Press Tab in a command to complete a coin name and see its value in bronze.
 
 | Command | Use |
 | --- | --- |
