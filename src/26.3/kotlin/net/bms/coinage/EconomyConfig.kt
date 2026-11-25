@@ -11,6 +11,10 @@ import net.minecraft.resources.Identifier
 class EconomyConfig : Config(Identifier.fromNamespaceAndPath(MOD_ID, "economy")) {
     var conversion = CurrencyConfig()
 
+    @Translatable.Name("Pay merchants from purse")
+    @Translatable.Desc("Withdraw real coins for merchant payment slots and refund unspent currency when trading closes.")
+    var merchantPursePayments = true
+
     @Translatable.Name("Player payments")
     @Translatable.Desc("Allow players to send coins directly from their purse.")
     var playerPayments = true

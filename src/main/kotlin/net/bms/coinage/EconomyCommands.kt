@@ -12,13 +12,12 @@ import net.minecraft.commands.Commands.literal
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.BlockHitResult
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
-            literal("coinage")
+            literal("coinage").executes { PurseMenu.open(it.source.playerOrException); 1 }
             .then(
                 literal("balance").executes(::showOwnBalance)
                     .then(
@@ -44,6 +43,12 @@ internal class EconomyCommands(private val config: EconomyConfig) {
                         )
                     )
             )
+            .then(literal("purse").executes {
+                PurseMenu.open(it.source.playerOrException)
+                1
+            })
+            .then(literal("deposit").executes(::deposit)
+                .then(literal("all").executes(::deposit)))
             .then(literal("rates").executes(::showRates))
             .then(
                 literal("shop")
@@ -213,44 +218,23 @@ internal class EconomyCommands(private val config: EconomyConfig) {
         return 1
     }
 
+    private fun deposit(context: CommandContext<CommandSourceStack>): Int {
+        val amount = PurseTransactions.deposit(context.source.playerOrException) ?: throw paymentFailed.create()
+        context.source.sendSuccess({ Component.translatable("command.coinage.deposited", amount) }, false)
+        return 1
+    }
+
     private fun makeBag(context: CommandContext<CommandSourceStack>): Int {
-        val player = context.source.playerOrException
-        val amount = coinAmount(context, 1)
-        val ledger = PurseLedger.get(context.source.server)
-        if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
-        val bag = MoneyBagItem.create(amount)
-        if (!InventoryTransactions.insert(player.inventory, bag)) throw paymentFailed.create()
-        ledger.setBalance(player.uuid, ledger.balance(player.uuid) - amount)
-        player.containerMenu.broadcastChanges()
+        if (!PurseTransactions.withdraw(context.source.playerOrException, coinAmount(context, 1), bag = true)) {
+            throw paymentFailed.create()
+        }
         return 1
     }
 
     private fun withdraw(context: CommandContext<CommandSourceStack>): Int {
-        val player = context.source.playerOrException
-        val amount = coinAmount(context, 1)
-        val ledger = PurseLedger.get(context.source.server)
-        if (ledger.balance(player.uuid) < amount) throw paymentFailed.create()
-        var remaining = amount
-        val stacks = mutableListOf<ItemStack>()
-        for (coin in CoinageItems.descending) {
-            var count = remaining / coin.denomination
-            remaining %= coin.denomination
-            if (count > 3600) throw invalidAmount.create()
-            while (count > 0) {
-                val size = minOf(count, 100).toInt()
-                stacks.add(ItemStack(coin, size))
-                count -= size
-            }
-        }
-        val inventory = player.inventory
-        val snapshot = InventoryTransactions.snapshot(inventory)
-        if (!stacks.all { InventoryTransactions.insert(inventory, it) }) {
-            InventoryTransactions.restore(inventory, snapshot)
-            player.containerMenu.broadcastChanges()
+        if (!PurseTransactions.withdraw(context.source.playerOrException, coinAmount(context, 1))) {
             throw paymentFailed.create()
         }
-        ledger.setBalance(player.uuid, ledger.balance(player.uuid) - amount)
-        player.containerMenu.broadcastChanges()
         return 1
     }
 
