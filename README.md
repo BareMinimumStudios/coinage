@@ -29,6 +29,10 @@ Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 
 | `/coinage pay <player> <amount>` | Transfer purse funds when player payments are enabled. |
 | `/coinage top [limit]` | Rank purse balances. Requires operator permission. |
 
+## Purse funds on death
+
+The server's `deathLossPercent` sets how much of the purse becomes a money bag on death. With a compatible version of You're in Grave Danger or GraveStone Mod, the grave captures that bag along with the other death drops. With `keepInventory` enabled, the purse keeps its balance.
+
 ## Automatic coin collection
 
 Run `/coinage autocollect toggle` to change your preference, or use `/coinage autocollect true` or `false` to set it directly. Run `/coinage autocollect` to check the current setting. It starts off and saves separately for each player in each world. When enabled, picking up dropped coins puts them in your purse. Money bags and coins with custom item data still go into your inventory.

@@ -24,7 +24,8 @@
     ]
   },
   "mixins": [
-    "coinage.mixins.json"
+    "coinage.mixins.json",
+    "coinage.fabric.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.19.5",

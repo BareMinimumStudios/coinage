@@ -37,6 +37,7 @@ def verify(loader):
         required = {
             "LICENSE", "LICENSE-UPSTREAM", "NOTICE.md", metadata_paths[loader], "coinage.mixins.json",
             "net/bms/coinage/PurseLedger.class",
+            "net/bms/coinage/PurseDeathDropsKt.class",
             "net/bms/coinage/PiggyBankItem.class",
             "net/bms/coinage/PiggyBankColoringRecipe.class",
             "net/bms/coinage/PiggyBankEffects.class",
@@ -94,15 +95,23 @@ def verify(loader):
         ))
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
-        mixin_config = json.loads(archive.read("coinage.mixins.json"))
-        shared_mixins = mixin_config["mixins"]
-        if "CoinPickupMixin" not in shared_mixins:
-            raise SystemExit(f"{loader} is missing the server-side automatic coin pickup hook")
-        mixin_root = mixin_config["package"].replace(".", "/")
-        mixin_classes = {f"{mixin_root}/{name}.class" for side in ("mixins", "client", "server")
-                         for name in mixin_config.get(side, [])}
-        if missing := mixin_classes - names:
-            raise SystemExit(f"{loader} is missing declared mixins: {', '.join(sorted(missing))}")
+        mixin_files = {"coinage.mixins.json": {"CoinPickupMixin"}}
+        if loader == "fabric":
+            mixin_files["coinage.fabric.mixins.json"] = {"YigdInventoryMixin"}
+            fabric_metadata = json.loads(archive.read(metadata_paths[loader]))
+            if set(fabric_metadata["mixins"]) != set(mixin_files):
+                raise SystemExit("Fabric must register its shared and optional mixin configurations")
+        for file, required_mixins in mixin_files.items():
+            mixin_config = json.loads(archive.read(file))
+            if missing := required_mixins - set(mixin_config["mixins"]):
+                raise SystemExit(f"{loader} is missing server-side hooks in {file}: {', '.join(sorted(missing))}")
+            if mixin_config["compatibilityLevel"] != f"JAVA_{pins['java_version']}":
+                raise SystemExit(f"{loader} has the wrong Java compatibility in {file}")
+            mixin_root = mixin_config["package"].replace(".", "/")
+            mixin_classes = {f"{mixin_root}/{name}.class" for side in ("mixins", "client", "server")
+                             for name in mixin_config.get(side, [])}
+            if missing := mixin_classes - names:
+                raise SystemExit(f"{loader} is missing declared mixins: {', '.join(sorted(missing))}")
         forbidden = ("io/wispforest/", "org/ladysnake/cca/", "dev/onyxstudios/cca/",
                      "redempt/crunch/", "net/bms/coinage/internal/crunch/")
         if any(name.startswith(forbidden) for name in names):

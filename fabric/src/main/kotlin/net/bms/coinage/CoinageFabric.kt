@@ -64,7 +64,9 @@ object CoinageFabric : ModInitializer {
         }
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)
-        ServerLivingEntityEvents.AFTER_DEATH.register(events::onDeath)
+        ServerLivingEntityEvents.AFTER_DEATH.register { entity, source ->
+            if (!YigdPurseCompat.wasCaptured(entity)) events.onDeath(entity, source)
+        }
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
             TradeCatalog.reload(server)
         }

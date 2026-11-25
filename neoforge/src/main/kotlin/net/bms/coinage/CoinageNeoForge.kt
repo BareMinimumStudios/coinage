@@ -14,7 +14,11 @@ import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.LootTableLoadEvent
 import net.neoforged.neoforge.event.TagsUpdatedEvent
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.entity.item.ItemEntity
+import net.neoforged.bus.api.EventPriority
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent
 import net.neoforged.neoforge.registries.RegisterEvent
 
 @Mod(MOD_ID)
@@ -107,7 +111,15 @@ class CoinageNeoForge(modBus: IEventBus) {
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)
         NeoForge.EVENT_BUS.addListener { event: LivingDeathEvent ->
-            if (!event.isCanceled) events.onDeath(event.entity, event.source)
+            if (!event.isCanceled && event.entity !is ServerPlayer) events.onDeath(event.entity, event.source)
+        }
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST) { event: LivingDropsEvent ->
+            val player = event.entity as? ServerPlayer ?: return@addListener
+            dropPurseOnDeath(player) { bag ->
+                val drop = ItemEntity(player.level(), player.x, player.y, player.z, bag)
+                drop.setDefaultPickUpDelay()
+                event.drops.add(drop)
+            }
         }
         NeoForge.EVENT_BUS.addListener { event: TagsUpdatedEvent -> events.clearDropCache() }
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> commands.register(event.dispatcher) }

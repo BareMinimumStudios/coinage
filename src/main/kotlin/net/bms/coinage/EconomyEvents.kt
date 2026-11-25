@@ -68,25 +68,9 @@ internal class EconomyEvents(private val config: EconomyConfig) {
         val level = entity.level() as? ServerLevel ?: return
 
         if (entity is ServerPlayer) {
-            if (level.gameRules.getBoolean(GameRules.RULE_KEEPINVENTORY)) return
-
-            val ledger = PurseLedger.get(entity.server)
-
-            val balance = ledger.balance(entity.uuid)
-
-            val percent = config.deathLossPercent.coerceIn(0, 100)
-
-            val loss = balance / 100 * percent + balance % 100 * percent / 100
-
-            if (loss == 0L) return
-
-            entity.spawnAtLocation(MoneyBagItem.create(loss)) ?: return
-
-            ledger.setBalance(entity.uuid, balance - loss)
-
+            dropPurseOnDeath(entity) { bag -> entity.spawnAtLocation(bag) != null }
             return
         }
-
         val killer = source.entity as? ServerPlayer ?: entity.killCredit as? ServerPlayer ?: return
 
         if (!level.gameRules.getBoolean(GameRules.RULE_DOMOBLOOT)) return

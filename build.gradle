@@ -115,7 +115,7 @@ subprojects {
             fabricKotlinVersion: pins.fabric_kotlin_version
         ]
         inputs.properties(values)
-        filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml', 'coinage.mixins.json']) { expand(values) }
+        filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml', 'coinage.mixins.json', 'coinage.fabric.mixins.json']) { expand(values) }
     }
     tasks.withType(Jar).configureEach {
         from(rootProject.file('LICENSE'))
