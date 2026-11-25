@@ -91,7 +91,7 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: 
                     else "gui.coinage.shop_payment_instructions"))
                 if (shop.canManage(viewer)) add(Component.translatable("gui.coinage.shop_owner_instructions"))
             }))
-            ShopEditorData.markMenu(this, shop.canManage(viewer), shop.nextOfferNumber)
+            ShopEditorData.markMenu(this, shop.canManage(viewer), shop.nextOfferNumber, shop.shopBlock.pawn)
         })
     }
 

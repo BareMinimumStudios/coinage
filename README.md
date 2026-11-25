@@ -43,7 +43,7 @@ Run `/coinage autocollect toggle` to change your preference, or use `/coinage au
 
 Stock a shop with goods to sell. Fund a pawn shop to buy goods from players. Use **Edit Offers** in a shop you manage to set templates and prices. The automation toggle controls whether item transfer systems may access the shop's stock. It starts disabled.
 
-Server settings use Fzzy Config under `config/coinage/`. Client settings include purse button visibility, HUD position, and balance notifications. Open **Purse button position** in Coinage's client settings to move the button in inventory, Creative, and merchant screens.
+Server settings use Fzzy Config under `config/coinage/`. Client settings include purse button visibility, HUD position, and balance notifications. Open **Purse button position** in Coinage's client settings to move the button in inventory, Creative, merchant, and pawn shop screens.
 
 Use the same Coinage version on clients and servers.
 

@@ -4,6 +4,7 @@ import net.bms.coinage.ClientPurseState
 import net.bms.coinage.CurrencyTooltip
 import net.minecraft.ChatFormatting
 import net.bms.coinage.PurseWithdrawPayloads
+import net.bms.coinage.ShopEditorData
 import net.bms.coinage.mixin.ContainerScreenAccessor
 import net.bms.coinage.mixin.CreativeScreenAccessor
 import net.minecraft.client.Minecraft
@@ -29,9 +30,11 @@ internal object PursePopupClient {
         val access = screen as ContainerScreenAccessor
         val offset = if (screen is CreativeModeInventoryScreen) 38 else access.`coinage$getWidth`() - 16
         val settings = PurseClient.config.purseOffsets
-        val (dx, dy) = when (screen) {
-            is CreativeModeInventoryScreen -> settings.creativeX.get() to settings.creativeY.get()
-            is MerchantScreen -> settings.merchantX.get() to settings.merchantY.get()
+        val (dx, dy) = when {
+            screen is CreativeModeInventoryScreen -> settings.creativeX.get() to settings.creativeY.get()
+            screen is MerchantScreen -> settings.merchantX.get() to settings.merchantY.get()
+            screen.menu.slots.size == 90 && ShopEditorData.isPawnShop(screen.menu.slots[53].item) ->
+                settings.pawnShopX.get() to settings.pawnShopY.get()
             else -> settings.inventoryX.get() to settings.inventoryY.get()
         }
         val x = (access.`coinage$getLeft`() + offset + dx).coerceIn(0, (screen.width - 11).coerceAtLeast(0))

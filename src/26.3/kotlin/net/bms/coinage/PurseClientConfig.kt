@@ -26,6 +26,10 @@ internal class PurseButtonOffsets : ConfigSection() {
     var merchantX = ValidatedInt(0, -128..128)
     @Translatable.Name("Merchant vertical offset")
     var merchantY = ValidatedInt(0, -128..128)
+    @Translatable.Name("Pawn shop horizontal offset")
+    var pawnShopX = ValidatedInt(0, -128..128)
+    @Translatable.Name("Pawn shop vertical offset")
+    var pawnShopY = ValidatedInt(0, -128..128)
 }
 
 @RootConfig
