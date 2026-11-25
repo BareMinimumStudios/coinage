@@ -72,10 +72,18 @@ def verify(loader):
             "net/bms/coinage/ChestLootConfig.class",
             "net/bms/coinage/ChestCurrencyLoot.class",
             "net/bms/coinage/SetMoneyFunction.class",
+            "data/coinage/advancement/recipes/shop.json",
+            "data/coinage/tags/item/coins.json",
+            "data/coinage/tags/block/piggy_banks.json",
+            "data/minecraft/tags/block/mineable/pickaxe.json",
+            "data/minecraft/tags/block/needs_stone_tool.json",
+            "assets/coinage/textures/gui/purse_panel.png",
+            "assets/coinage/font/purse_coins.json",
         }
         required.update("net/bms/coinage/" + name + ".class" for name in (
             "PurseWithdrawal", "PurseWithdrawPayloads", "PurseSelection", "client/PurseAmountClient", "client/PurseAmountScreen",
-            "client/PursePopupClient", "client/PursePopupScreen", "client/PurseDraw",
+            "client/PursePopupClient", "client/PursePopupScreen", "client/PurseDraw", "CurrencyTooltip",
+            "client/ShopDisplayRenderer",
             "mixin/ContainerScreenAccessor", "mixin/CreativeScreenAccessor",
             "ShopStock", "TradeCatalog", "TradeDefinition", "TradePlatform", "TradeSpecializations", "MerchantCommands",
             "PurseSync", "PursePayloads", "PurseClientConfig", "ClientPurseState", "client/PurseClient",
@@ -149,7 +157,26 @@ def verify(loader):
         purse_texture = archive.read("assets/coinage/textures/gui/purse_widget.png")
         if purse_texture[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", purse_texture[16:24]) != (128, 64):
             raise SystemExit("Missing or invalid original purse widget texture")
+        panel_path = "assets/coinage/textures/gui/purse_panel.png"
+        panel_texture = archive.read(panel_path)
+        if panel_texture != Path("src/main/resources", panel_path).read_bytes():
+            raise SystemExit(f"{loader} contains a stale purse panel texture")
+        if panel_texture[:8] != b"\x89PNG\r\n\x1a\n" or struct.unpack(">II", panel_texture[16:24]) != (64, 128):
+            raise SystemExit("Invalid purse panel texture dimensions")
         tiers = {"bronze", "silver", "gold", "platinum"}
+        font_providers = json.loads(archive.read("assets/coinage/font/purse_coins.json"))["providers"]
+        font_files = {provider["file"] for provider in font_providers if provider["type"] == "bitmap"}
+        if font_files != {f"coinage:item/{tier}_coin.png" for tier in tiers}:
+            raise SystemExit("Purse tooltip font must use all four coin item sprites")
+        coins_tag = json.loads(archive.read("data/coinage/tags/item/coins.json"))
+        if coins_tag["replace"] or set(coins_tag["values"]) != {f"coinage:{tier}_coin" for tier in tiers}:
+            raise SystemExit("Coin tag must include all four denominations")
+        shop_advancement = json.loads(archive.read("data/coinage/advancement/recipes/shop.json"))
+        recipe_field = "recipes" if target == "26.3" else "recipe"
+        if (shop_advancement["criteria"]["has_recipe"]["conditions"] != {recipe_field: "coinage:shop"}
+                or shop_advancement["rewards"]["recipes"] != ["coinage:shop"]
+                or shop_advancement["criteria"]["has_coin"]["conditions"]["items"] != [{"items": "#coinage:coins"}]):
+            raise SystemExit(f"Invalid shop recipe unlock for {target}")
         for tier in tiers:
             for suffix in ("", "_0", "_1", "_2", "_3"):
                 texture = f"assets/coinage/textures/item/{tier}_coin{suffix}.png"
