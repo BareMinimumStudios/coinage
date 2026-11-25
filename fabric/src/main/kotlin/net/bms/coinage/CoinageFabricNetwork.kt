@@ -8,6 +8,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
 internal object CoinageFabricNetwork {
     fun register() {
+        PayloadTypeRegistry.playC2S().register(PurseWithdrawPayloads.SELECTED, PurseWithdrawPayloads.SELECTED_CODEC)
+        ServerPlayNetworking.registerGlobalReceiver(PurseWithdrawPayloads.SELECTED) { packet, context ->
+            context.server().execute { PurseWithdrawal.selected(context.player(), packet) }
+        }
         PayloadTypeRegistry.playC2S().register(PurseWithdrawPayloads.QUICK, PurseWithdrawPayloads.QUICK_CODEC)
         PayloadTypeRegistry.playS2C().register(PursePayloads.SHOW, PursePayloads.SHOW_CODEC)
         ServerPlayNetworking.registerGlobalReceiver(PurseWithdrawPayloads.QUICK) { packet, context ->

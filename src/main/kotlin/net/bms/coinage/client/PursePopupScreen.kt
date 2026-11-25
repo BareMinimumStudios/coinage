@@ -76,7 +76,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
             purse.setTooltip(Tooltip.create(PursePopupClient.tooltip()))
         }
         selection.limit(ClientPurseState.balance, ClientPurseState.rates)
-        val ready = pending == null && ClientPurseState.ready && PurseAmountClient.available()
+        val ready = pending == null && ClientPurseState.ready && PursePopupClient.selectionAvailable()
         val total = selection.total(ClientPurseState.rates)
         for ((tier, up, down) in selectors) {
             up.active = ready && selection[tier] < 100 && ClientPurseState.balance - total >= ClientPurseState.rates.value(tier)
@@ -97,7 +97,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
     }
 
     private fun submit(asBag: Boolean) {
-        if (pending != null || !PurseAmountClient.available()) return
+        if (pending != null || !PursePopupClient.selectionAvailable()) return
         val all = !asBag && PurseDraw.shiftDown() && PurseDraw.controlDown()
         if (all && !PursePopupClient.quickAvailable()) return
         val total = selection.total(ClientPurseState.rates)
@@ -107,7 +107,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
         sentAt = System.nanoTime()
         error = Component.empty()
         if (all) PursePopupClient.quick(PurseWithdrawPayloads.Quick(menu.containerId, request, 1))
-        else PurseAmountClient.send(PurseWithdrawPayloads.Withdraw(menu.containerId, request, total.toString(), asBag))
+        else PursePopupClient.selected(PurseWithdrawPayloads.Selected(menu.containerId, request, CoinTier.entries.map { selection[it] }, asBag))
         updateButtons()
     }
 

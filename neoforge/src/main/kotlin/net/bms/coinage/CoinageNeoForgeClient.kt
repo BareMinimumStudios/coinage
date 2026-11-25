@@ -24,6 +24,8 @@ class CoinageNeoForgeClient(modBus: IEventBus) {
         modBus.addListener { event: RegisterKeyMappingsEvent -> event.register(PurseClient.key) }
         PurseAmountClient.available = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.WITHDRAW) == true }
         PurseAmountClient.send = { PacketDistributor.sendToServer(it) }
+        PursePopupClient.selectionAvailable = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.SELECTED) == true }
+        PursePopupClient.selected = { PacketDistributor.sendToServer(it) }
         PursePopupClient.quickAvailable = { Minecraft.getInstance().connection?.hasChannel(PurseWithdrawPayloads.QUICK) == true }
         PursePopupClient.quick = { PacketDistributor.sendToServer(it) }
         ShopClient.available = { Minecraft.getInstance().connection?.hasChannel(ShopEditPayloads.EDIT) == true }

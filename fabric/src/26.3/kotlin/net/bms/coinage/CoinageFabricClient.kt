@@ -19,6 +19,8 @@ object CoinageFabricClient : ClientModInitializer {
     override fun onInitializeClient() {
         PurseClient.initialize(); PurseAmountClient.initialize()
         ShopClient.initialize()
+        PursePopupClient.selectionAvailable = { ClientPlayNetworking.canSend(PurseWithdrawPayloads.SELECTED) }
+        PursePopupClient.selected = { ClientPlayNetworking.send(it) }
         PursePopupClient.quickAvailable = { ClientPlayNetworking.canSend(PurseWithdrawPayloads.QUICK) }
         PursePopupClient.quick = { ClientPlayNetworking.send(it) }
         ClientPlayNetworking.registerGlobalReceiver(PursePayloads.SHOW) { _, context ->

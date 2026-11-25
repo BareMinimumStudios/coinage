@@ -27,6 +27,9 @@ internal object CoinageNeoForgeNetwork {
         }
         bus.addListener { event: RegisterPayloadHandlersEvent ->
             val registrar = event.registrar(PursePayloads.PROTOCOL.toString()).optional()
+            registrar.playToServer(PurseWithdrawPayloads.SELECTED, PurseWithdrawPayloads.SELECTED_CODEC) { packet, context ->
+                context.enqueueWork { PurseWithdrawal.selected(context.player() as ServerPlayer, packet) }
+            }
             registrar.playToServer(PurseWithdrawPayloads.QUICK, PurseWithdrawPayloads.QUICK_CODEC) { packet, context ->
                 context.enqueueWork { PurseWithdrawal.quick(context.player() as ServerPlayer, packet) }
             }

@@ -18,6 +18,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.item.CreativeModeTab
 
 internal object PursePopupClient {
+    var selected: (PurseWithdrawPayloads.Selected) -> Unit = {}
+    var selectionAvailable: () -> Boolean = { false }
     var quick: (PurseWithdrawPayloads.Quick) -> Unit = {}
     var quickAvailable: () -> Boolean = { false }
     private var attached: Pair<AbstractContainerScreen<*>, Button>? = null

@@ -2,9 +2,21 @@ package net.bms.coinage
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class PurseSelectionTest {
+    @Test
+    fun `server selection values reject invalid counts and preserve denomination value`() {
+        val rates = ExchangeRates()
+        assertEquals(100L, PurseSelection.valueOf(listOf(100, 0, 0, 0, 0), rates))
+        assertEquals(100L, PurseSelection.valueOf(listOf(0, 1, 0, 0, 0), rates))
+        assertNull(PurseSelection.valueOf(listOf(0, 0, 0, 0, 0), rates))
+        assertNull(PurseSelection.valueOf(listOf(101, 0, 0, 0, 0), rates))
+        assertNull(PurseSelection.valueOf(listOf(-1, 1, 0, 0, 0), rates))
+        assertNull(PurseSelection.valueOf(listOf(1), rates))
+    }
+
     @Test
     fun `selectors support a full one hundred coin stack and clamp increments`() {
         val selection = PurseSelection()

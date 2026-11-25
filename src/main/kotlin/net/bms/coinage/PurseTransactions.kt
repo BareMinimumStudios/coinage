@@ -66,6 +66,21 @@ internal object PurseTransactions {
                 }
             }
         }
+        return deliver(player, amount, stacks)
+    }
+
+    fun withdrawSelected(player: ServerPlayer, counts: List<Int>, bag: Boolean): Boolean {
+        val amount = PurseSelection.valueOf(counts, CurrencyValues.current()) ?: return false
+        val stacks = if (bag) listOf(MoneyBagItem.create(amount)) else CoinageItems.descending.mapNotNull { coin ->
+            counts[coin.tier.ordinal].takeIf { it > 0 }?.let { ItemStack(coin, it) }
+        }
+        return deliver(player, amount, stacks)
+    }
+
+    private fun deliver(player: ServerPlayer, amount: Long, stacks: List<ItemStack>): Boolean {
+        val ledger = PurseLedger.get(player.server)
+        val balance = ledger.balance(player.uuid)
+        if (amount <= 0 || balance < amount) return false
         val snapshot = InventoryTransactions.snapshot(player.inventory)
         if (!stacks.all { InventoryTransactions.insert(player.inventory, it) }) {
             InventoryTransactions.restore(player.inventory, snapshot)

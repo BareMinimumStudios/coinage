@@ -35,6 +35,12 @@ internal object PurseWithdrawal {
             if (amount == null) 1 else if (PurseTransactions.withdraw(player, amount, bag = packet.bag)) 0 else 2
         }
 
+    fun selected(player: ServerPlayer, packet: PurseWithdrawPayloads.Selected) =
+        execute(player, packet.containerId, packet.requestId) {
+            if (PurseSelection.valueOf(packet.counts, CurrencyValues.current()) == null) 1
+            else if (PurseTransactions.withdrawSelected(player, packet.counts, packet.bag)) 0 else 2
+        }
+
     fun quick(player: ServerPlayer, packet: PurseWithdrawPayloads.Quick) =
         execute(player, packet.containerId, packet.requestId) {
             when (packet.action) {

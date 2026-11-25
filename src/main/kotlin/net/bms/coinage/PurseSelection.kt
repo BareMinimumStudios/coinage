@@ -22,4 +22,11 @@ internal class PurseSelection {
         val extra = ((balance.coerceAtLeast(0) - total(rates)) / rates.value(tier)).coerceAtMost(100).toInt()
         counts[tier.ordinal] = (old.toLong() + change).coerceIn(0, minOf(100, old + extra).toLong()).toInt()
     }
+    companion object {
+        fun valueOf(counts: List<Int>, rates: ExchangeRates): Long? {
+            if (counts.size != CoinTier.entries.size || counts.any { it !in 0..100 }) return null
+            return CoinTier.entries.sumOf { counts[it.ordinal] * rates.value(it) }.takeIf { it > 0 }
+        }
+    }
+
 }
