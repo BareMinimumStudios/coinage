@@ -11,6 +11,8 @@ import net.minecraft.resources.Identifier
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
+import net.neoforged.neoforge.event.server.ServerStartedEvent
+import net.neoforged.neoforge.event.OnDatapackSyncEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.LootTableLoadEvent
@@ -96,6 +98,10 @@ class CoinageNeoForge(modBus: IEventBus) {
             if (!event.isCanceled) ChestCurrencyLoot.pools(event.name.toString(), config.chestLoot).forEach { (name, pool) ->
                 if (event.table.getPool(name) == null) event.table.addPool(pool.name(name).build())
             }
+        }
+        NeoForge.EVENT_BUS.addListener { event: ServerStartedEvent -> TradeCatalog.reload(event.server) }
+        NeoForge.EVENT_BUS.addListener { event: OnDatapackSyncEvent ->
+            if (event.player == null) TradeCatalog.reload(event.playerList.server)
         }
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)

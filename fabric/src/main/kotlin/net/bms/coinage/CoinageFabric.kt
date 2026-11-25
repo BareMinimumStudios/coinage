@@ -63,7 +63,13 @@ object CoinageFabric : ModInitializer {
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)
         ServerLivingEntityEvents.AFTER_DEATH.register(events::onDeath)
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { _, _, success -> if (success) events.clearDropCache() }
+        ServerLifecycleEvents.SERVER_STARTED.register(TradeCatalog::reload)
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, success ->
+            if (success) {
+                events.clearDropCache()
+                TradeCatalog.reload(server)
+            }
+        }
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ -> commands.register(dispatcher) }
     }
 }

@@ -31,7 +31,7 @@
   "block.coinage.black_piggy_bank": "Black Piggy Bank",
   "container.coinage.shop": "Shop",
   "container.coinage.pawn_shop": "Pawn Shop",
-  "gui.coinage.offer": "%s \u2014 %s coins",
+  "gui.coinage.offer": "%s â€” %s coins",
   "gui.coinage.collect": "Collect %s coins",
   "gui.coinage.shop_help": "Set offers with /coinage shop offer <1-9> <price> while holding the item",
   "gui.coinage.trade_failed": "Trade failed. Check stock, purse funds, and inventory space.",
@@ -58,5 +58,17 @@
   "gui.coinage.bank_full": "The bank needs more room. Your currency stayed in its original slots.",
   "subtitles.coinage.piggy_bank_break": "Piggy bank shatters",
   "tag.item.coinage.bank_hammers": "Piggy bank hammers",
-  "tag.block.coinage.very_heavy_blocks": "Blocks that smash piggy banks"
+  "tag.block.coinage.very_heavy_blocks": "Blocks that smash piggy banks",
+  "tag.item.coinage.banners": "Banners",
+  "tag.item.coinage.beds": "Beds",
+  "tag.item.coinage.boats": "Boats",
+  "tag.item.coinage.carpets": "Carpets",
+  "tag.item.coinage.concrete": "Concrete",
+  "tag.item.coinage.glazed_terracotta": "Glazed terracotta",
+  "tag.item.coinage.terracotta": "Terracotta",
+  "tag.item.coinage.wool": "Wool",
+  "command.coinage.trades.status": "Loaded %s trades for %s merchant profiles; %s rejected definitions.",
+  "command.coinage.trades.reloaded": "Reloaded Coinage merchant definitions. Existing offers stay unchanged.",
+  "command.coinage.trades.not_merchant": "That entity does not trade.",
+  "command.coinage.trades.inspected": "%s has %s available offers."
 }

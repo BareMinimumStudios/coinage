@@ -16,6 +16,7 @@ import net.minecraft.world.phys.BlockHitResult
 
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
+        MerchantCommands.register(dispatcher)
         dispatcher.register(
             literal("coinage").executes { PurseMenu.open(it.source.playerOrException); 1 }
             .then(

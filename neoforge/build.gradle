@@ -16,6 +16,9 @@ dependencies {
     }
     implementation "thedarkcolour:kotlinforforge-neoforge:${pins.kotlin_for_forge_version}"
 }
+// Plain Java libraries must also be visible to NeoForge development runs.
+configurations.additionalRuntimeClasspath.extendsFrom(configurations.expressionEngine)
+
 tasks.named('jar') { archiveClassifier.set('unshaded') }
 tasks.named('shadowJar') { archiveClassifier.set('') }
 tasks.named('assemble') { dependsOn tasks.named('shadowJar') }

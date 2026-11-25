@@ -7,7 +7,9 @@
     "StackSizeComponentMixin",
     "ItemStackCountMixin",
     "ContainerStackLimitMixin",
-    "MerchantPaymentsMixin"
+    "MerchantPaymentsMixin",
+    "MerchantTradesMixin",
+    "MerchantCurrencyMixin"
   ],
   "injectors": {
     "defaultRequire": 1
