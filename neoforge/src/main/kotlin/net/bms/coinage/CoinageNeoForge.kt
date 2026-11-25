@@ -96,7 +96,10 @@ class CoinageNeoForge(modBus: IEventBus) {
                 if (event.table.getPool(name) == null) event.table.addPool(pool.name(name).build())
             }
         }
-        NeoForge.EVENT_BUS.addListener { event: ServerStartedEvent -> TradeCatalog.reload(event.server) }
+        NeoForge.EVENT_BUS.addListener { event: ServerStartedEvent ->
+            PurseMigration.importSavedBalances(event.server)
+            TradeCatalog.reload(event.server)
+        }
         NeoForge.EVENT_BUS.addListener { event: OnDatapackSyncEvent ->
             if (event.player == null) TradeCatalog.reload(event.playerList.server)
         }
