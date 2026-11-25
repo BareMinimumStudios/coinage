@@ -60,6 +60,7 @@ def verify(loader):
             "net/bms/coinage/client/ShopEditScreen.class",
             "net/bms/coinage/mixin/ShopClickGuardMixin.class",
             "net/bms/coinage/CurrencyInteractions.class",
+            "net/bms/coinage/CurrencyPayment.class",
             "net/bms/coinage/mixin/ItemStackCountMixin.class",
             "net/bms/coinage/mixin/StackSizeComponentMixin.class",
             "net/bms/coinage/mixin/ContainerStackLimitMixin.class",

@@ -85,6 +85,12 @@ internal class ShopMenu(id: Int, playerInventory: Inventory, internal val shop: 
         } else ItemStack.EMPTY)
         display.setItem(53, ItemStack(Items.PAPER).apply {
             set(DataComponents.CUSTOM_NAME, Component.translatable("gui.coinage.shop_help"))
+            set(DataComponents.LORE, ItemLore(buildList {
+                add(Component.translatable("gui.coinage.trade_instructions"))
+                add(Component.translatable(if (shop.shopBlock.pawn) "gui.coinage.pawn_payment_instructions"
+                    else "gui.coinage.shop_payment_instructions"))
+                if (shop.canManage(viewer)) add(Component.translatable("gui.coinage.shop_owner_instructions"))
+            }))
             ShopEditorData.markMenu(this, shop.canManage(viewer), shop.nextOfferNumber)
         })
     }

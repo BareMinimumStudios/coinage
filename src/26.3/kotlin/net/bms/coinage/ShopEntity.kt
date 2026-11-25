@@ -196,15 +196,17 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
             ledger.setBalance(player.uuid, balance + price)
             if (!unlimited) storedCoins -= price
         } else {
-            if (balance < price || storedCoins > Long.MAX_VALUE - price) return false
+            if (storedCoins > Long.MAX_VALUE - price) return false
+            val payment = CurrencyPayment.plan(player.inventory, balance, price) ?: return false
             val playerSnapshot = InventoryTransactions.snapshot(player.inventory)
             val stockSnapshot = InventoryTransactions.snapshot(stock)
+            payment.apply(player.inventory)
             if ((!unlimited && !InventoryTransactions.removeMatching(stock, template)) || !InventoryTransactions.insert(player.inventory, template.copy())) {
                 InventoryTransactions.restore(player.inventory, playerSnapshot)
                 InventoryTransactions.restore(stock, stockSnapshot)
                 return false
             }
-            ledger.setBalance(player.uuid, balance - price)
+            ledger.setBalance(player.uuid, payment.balance)
             storedCoins += price
         }
         setChanged()

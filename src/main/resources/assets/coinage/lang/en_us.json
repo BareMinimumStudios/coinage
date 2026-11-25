@@ -33,7 +33,7 @@
   "container.coinage.pawn_shop": "Pawn Shop",
   "gui.coinage.offer": "%s â€” %s coins",
   "gui.coinage.collect": "Collect %s coins",
-  "gui.coinage.shop_help": "Set offers with /coinage shop offer <1-9> <price> while holding the item",
+  "gui.coinage.shop_help": "Trading help",
   "gui.coinage.trade_failed": "Trade failed. Check stock, purse funds, and inventory space.",
   "command.coinage.shop.configured": "Shop offer updated.",
   "command.coinage.shop.funded": "Coins transferred into the shop.",
@@ -107,5 +107,9 @@
   "gui.coinage.fund_pawn_shop": "Add funds",
   "gui.coinage.fund_failed": "The shop cannot accept those funds.",
   "gui.coinage.fund_inventory": "Left-click: add inventory coins and bags",
-  "gui.coinage.fund_purse": "Right-click: add your purse balance"
+  "gui.coinage.fund_purse": "Right-click: add your purse balance",
+  "gui.coinage.trade_instructions": "Left-click an offer to trade.",
+  "gui.coinage.shop_payment_instructions": "Pay from your purse, then inventory coins and bags.",
+  "gui.coinage.pawn_payment_instructions": "Sell inventory items to receive funds in your purse.",
+  "gui.coinage.shop_owner_instructions": "Owners can edit offers and manage stock."
 }
