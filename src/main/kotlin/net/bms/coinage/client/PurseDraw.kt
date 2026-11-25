@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation
 
 internal object PurseDraw {
     val texture = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/purse_widget.png")
+    private val panel = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/purse_panel.png")
     private val coins = CoinTier.entries.associateWith {
         ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/item/${it.name.lowercase(java.util.Locale.ROOT)}_coin.png")
     }
@@ -19,17 +20,9 @@ internal object PurseDraw {
     }
 
     fun background(graphics: GuiGraphics, x: Int, y: Int) {
-        fun band(sourceY: Int, height: Int, targetY: Int) {
-            region(graphics, x, targetY, 0, sourceY, 17, height)
-            region(graphics, x + 17, targetY, 16, sourceY, 1, height, 6)
-            region(graphics, x + 23, targetY, 17, sourceY, 20, height)
-        }
-        band(0, 10, y)
-        repeat(CoinTier.entries.size) { band(10, 12, y + 10 + it * 12) }
-        band(46, 13, y + 58)
+        graphics.blit(panel, x, y, 0f, 0f, 43, 84, 64, 128)
         for ((index, tier) in CoinTier.entries.reversed().withIndex()) {
             val row = y + 10 + index * 12
-            graphics.fill(x + 33, row + 1, x + 42, row + 11, 0xFFC6C6C6.toInt())
             val spriteWidth = when (tier) {
                 CoinTier.BRONZE, CoinTier.SILVER -> 7
                 CoinTier.GOLD -> 8
@@ -42,8 +35,8 @@ internal object PurseDraw {
             }
             val u = if (spriteWidth == 7) 5f else 4f
             val v = if (tier == CoinTier.BRONZE) 5f else 4f
-            val spriteX = x + 33 + (9 - spriteWidth) / 2
-            val spriteY = row + (12 - spriteHeight) / 2
+            val spriteX = x + 33 + (10 - spriteWidth) / 2
+            val spriteY = row + (11 - spriteHeight) / 2
             graphics.blit(coins.getValue(tier), spriteX, spriteY, u, v, spriteWidth, spriteHeight, 16, 16)
         }
     }

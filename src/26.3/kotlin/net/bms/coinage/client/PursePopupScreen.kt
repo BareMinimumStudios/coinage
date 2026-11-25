@@ -34,7 +34,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
         if (parent.width != width || parent.height != height) parent.resize(width, height)
         val anchor = PursePopupClient.anchor(parent)
         left = (anchor.first - 36).coerceIn(0, (width - 43).coerceAtLeast(0))
-        top = (anchor.second + 15).coerceIn(0, (height - 87).coerceAtLeast(0))
+        top = (anchor.second + 15).coerceIn(0, (height - 84).coerceAtLeast(0))
         purse = addRenderableWidget(PurseSpriteButton(anchor.first, anchor.second, 11, 13, title, 62, 0) {
             if (PurseDraw.shiftDown() && PursePopupClient.quickAvailable()) deposit() else onClose()
         })
@@ -65,7 +65,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
         bag.setTooltip(Tooltip.create(Component.translatable("gui.coinage.purse_bag_hint")))
         addRenderableWidget(Button.builder(Component.literal("...")) {
             client.gui.setScreen(PurseAmountScreen(parent))
-        }.bounds(left + 3, top + 73, 24, 12)
+        }.bounds(left + 3, top + 67, 24, 12)
             .tooltip(Tooltip.create(Component.translatable("gui.coinage.purse_amount_title"))).build())
         updateButtons()
     }
@@ -137,7 +137,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
 
     override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         if (super.mouseClicked(event, doubleClick)) return true
-        if (event.x() !in left.toDouble()..(left + 43).toDouble() || event.y() !in top.toDouble()..(top + 87).toDouble()) onClose()
+        if (event.x() !in left.toDouble()..(left + 43).toDouble() || event.y() !in top.toDouble()..(top + 84).toDouble()) onClose()
         return true
     }
 
