@@ -1,3 +1,5 @@
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+
 plugins {
     id 'base'
     id 'com.gradleup.shadow' version '9.3.1' apply false
@@ -35,9 +37,18 @@ subprojects {
         maven { url = 'https://maven.fzzyhmstrs.me/' }
         maven { url = 'https://maven.fabricmc.net/' }
         maven { url = 'https://maven.neoforged.net/releases' }
-        maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
+        maven {
+            url = 'https://thedarkcolour.github.io/KotlinForForge/'
+            content { includeGroup 'thedarkcolour' }
+        }
     }
     configurations.configureEach { exclude group: 'com.terraformersmc', module: 'modmenu' }
+    repositories.withType(MavenArtifactRepository).configureEach { repository ->
+        // Loom creates these artifacts locally; external Maven servers cannot supply them.
+        if (repository.url.scheme in ['http', 'https']) {
+            repository.content { excludeGroupByRegex 'remapped[.].*' }
+        }
+    }
     base { archivesName = "coinage-${project.name}" }
     java {
         toolchain { languageVersion = JavaLanguageVersion.of(rootProject.targetJava) }
