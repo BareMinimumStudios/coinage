@@ -108,6 +108,27 @@ def verify(loader):
             path = f"data/c/tags/worldgen/structure/{tag}.json"
             if json.loads(archive.read(path)) != {"replace": False, "values": values}:
                 raise SystemExit(f"Incorrect shared structure tag for {target}: {tag}")
+        def check_model_references(value, source):
+            if isinstance(value, dict):
+                for key, entry in value.items():
+                    if key in {"parent", "model"} and isinstance(entry, str) and entry.startswith("coinage:"):
+                        expected = "assets/coinage/models/" + entry.split(":", 1)[1] + ".json"
+                        if expected not in names:
+                            raise SystemExit(f"Missing model {entry} referenced by {source}")
+                    if key == "textures" and isinstance(entry, dict):
+                        for texture in entry.values():
+                            if isinstance(texture, str) and texture.startswith("coinage:"):
+                                expected = "assets/coinage/textures/" + texture.split(":", 1)[1] + ".png"
+                                if expected not in names:
+                                    raise SystemExit(f"Missing texture {texture} referenced by {source}")
+                    check_model_references(entry, source)
+            elif isinstance(value, list):
+                for entry in value:
+                    check_model_references(entry, source)
+
+        for name in sorted(names):
+            if name.startswith("assets/coinage/") and name.endswith(".json"):
+                check_model_references(json.loads(archive.read(name)), name)
         for notice in ("LICENSE", "LICENSE-UPSTREAM", "NOTICE.md"):
             packaged = archive.read(notice).replace(b"\r\n", b"\n")
             if packaged != Path(notice).read_bytes().replace(b"\r\n", b"\n"):
