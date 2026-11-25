@@ -25,6 +25,12 @@ def verify(loader):
         required = {
             "LICENSE", "LICENSE-UPSTREAM", "NOTICE.md", metadata_paths[loader], "coinage.mixins.json",
             "net/bms/coinage/PurseLedger.class",
+            "net/bms/coinage/PiggyBankItem.class",
+            "net/bms/coinage/PiggyBankColoringRecipe.class",
+            "net/bms/coinage/PiggyBankEffects.class",
+            "net/bms/coinage/BankTransactions.class",
+            "assets/coinage/sounds/piggy_bank_break.ogg",
+            "data/coinage/recipe/piggy_bank_coloring.json",
             "net/bms/coinage/PurseMenu.class",
             "net/bms/coinage/PurseTransactions.class",
             "net/bms/coinage/MerchantPayments.class",

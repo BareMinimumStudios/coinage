@@ -81,6 +81,16 @@ class CoinageNeoForge(modBus: IEventBus) {
                 registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "set_money"), SetMoneyFunction.CODEC)
             }
         }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.RECIPE_SERIALIZER) { registry ->
+                registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank_coloring"), PiggyBankColoringRecipe.SERIALIZER)
+            }
+        }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.SOUND_EVENT) { registry ->
+                registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank_break"), PiggyBankEffects.breakSound)
+            }
+        }
         val config = EconomyConfig.register()
         NeoForge.EVENT_BUS.addListener { event: LootTableLoadEvent ->
             if (!event.isCanceled) ChestCurrencyLoot.pools(event.name.toString(), config.chestLoot).forEach { (name, pool) ->

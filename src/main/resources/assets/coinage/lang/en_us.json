@@ -53,5 +53,10 @@
   "gui.coinage.bag_all": "Withdraw purse as a money bag",
   "gui.coinage.purse_help": "Left: 1 coin / Right: 100 / Shift-click currency to deposit",
   "gui.coinage.purse_failed": "Not enough currency or inventory space.",
-  "command.coinage.deposited": "Deposited %s bronze into your purse."
+  "command.coinage.deposited": "Deposited %s bronze into your purse.",
+  "gui.coinage.bank_quick_stack": "Store all inventory currency",
+  "gui.coinage.bank_full": "The bank needs more room. Your currency stayed in its original slots.",
+  "subtitles.coinage.piggy_bank_break": "Piggy bank shatters",
+  "tag.item.coinage.bank_hammers": "Piggy bank hammers",
+  "tag.block.coinage.very_heavy_blocks": "Blocks that smash piggy banks"
 }

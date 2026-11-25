@@ -1,0 +1,8 @@
+{
+  "piggy_bank_break": {
+    "subtitle": "subtitles.coinage.piggy_bank_break",
+    "sounds": [
+      "coinage:piggy_bank_break"
+    ]
+  }
+}

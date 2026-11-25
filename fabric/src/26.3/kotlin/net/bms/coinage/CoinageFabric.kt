@@ -55,6 +55,10 @@ object CoinageFabric : ModInitializer {
         )
         Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE,
             Identifier.fromNamespaceAndPath(MOD_ID, "set_money"), SetMoneyFunction.CODEC)
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER,
+            Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank_coloring"), PiggyBankColoringRecipe.SERIALIZER)
+        Registry.register(BuiltInRegistries.SOUND_EVENT,
+            Identifier.fromNamespaceAndPath(MOD_ID, "piggy_bank_break"), PiggyBankEffects.breakSound)
         val config = EconomyConfig.register()
         LootTableEvents.MODIFY.register { key, table, _, _ ->
             ChestCurrencyLoot.pools(key.identifier().toString(), config.chestLoot).forEach { (_, pool) -> table.withPool(pool) }

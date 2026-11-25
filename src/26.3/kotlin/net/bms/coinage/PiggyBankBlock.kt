@@ -1,27 +1,25 @@
 package net.bms.coinage
 
-import net.minecraft.resources.ResourceKey
-
-import net.minecraft.resources.Identifier
-
-import net.minecraft.core.registries.Registries
-
-import net.minecraft.world.level.storage.ValueOutput
-
-import net.minecraft.world.level.storage.ValueInput
-
-import net.minecraft.core.component.DataComponentGetter
-
 import java.util.Locale.ROOT
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.core.NonNullList
+import net.minecraft.core.component.DataComponentGetter
 import net.minecraft.core.component.DataComponentMap
 import net.minecraft.core.component.DataComponents
-import net.minecraft.core.NonNullList
+import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.stats.Stats
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.MenuProvider
 import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.item.FallingBlockEntity
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
@@ -31,15 +29,22 @@ import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.ItemContainerContents
+import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Mirror
 import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockBehaviour
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.StateDefinition
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.shapes.CollisionContext
 import net.minecraft.world.phys.shapes.Shapes
@@ -51,10 +56,27 @@ class PiggyBankBlock(name: String) : BaseEntityBlock(BlockBehaviour.Properties.o
         Identifier.fromNamespaceAndPath(MOD_ID, name)
     )
 )) {
+    init {
+        registerDefaultState(stateDefinition.any().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH))
+    }
+
+    override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
+        builder.add(BlockStateProperties.HORIZONTAL_FACING)
+    }
+
+    override fun getStateForPlacement(context: BlockPlaceContext): BlockState =
+        defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, context.horizontalDirection.opposite)
+
+    override fun rotate(state: BlockState, rotation: Rotation): BlockState =
+        state.setValue(BlockStateProperties.HORIZONTAL_FACING, rotation.rotate(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
+
+    override fun mirror(state: BlockState, mirror: Mirror): BlockState =
+        state.rotate(mirror.getRotation(state.getValue(BlockStateProperties.HORIZONTAL_FACING)))
+
     override fun getShape(
         state: BlockState, level: BlockGetter, pos: BlockPos,
         context: CollisionContext
-    ): VoxelShape = SHAPE
+    ): VoxelShape = SHAPES.getValue(state.getValue(BlockStateProperties.HORIZONTAL_FACING))
 
     override fun getRenderShape(state: BlockState) = RenderShape.MODEL
     override fun newBlockEntity(pos: BlockPos, state: BlockState) = PiggyBankEntity(pos, state)
@@ -75,6 +97,10 @@ class PiggyBankBlock(name: String) : BaseEntityBlock(BlockBehaviour.Properties.o
 
     override fun playerWillDestroy(level: Level, pos: BlockPos, state: BlockState, player: Player): BlockState {
         val bank = level.getBlockEntity(pos) as? PiggyBankEntity
+        if (!level.isClientSide() && player.isCreative && bank != null && PiggyBankEffects.isHammer(player.mainHandItem)) {
+            PiggyBankEffects.smash(level, pos, state, bank)
+            return super.playerWillDestroy(level, pos, state, player)
+        }
         if (!level.isClientSide() && player.isCreative && bank != null && !bank.inventory.isEmpty) {
             val stack = ItemStack(this)
             stack.applyComponents(bank.collectComponents())
@@ -85,10 +111,32 @@ class PiggyBankBlock(name: String) : BaseEntityBlock(BlockBehaviour.Properties.o
         return super.playerWillDestroy(level, pos, state, player)
     }
 
+    override fun playerDestroy(
+        level: ServerLevel, player: ServerPlayer, pos: BlockPos, state: BlockState,
+        blockEntity: BlockEntity?, tool: ItemStack
+    ) {
+        if (blockEntity is PiggyBankEntity && PiggyBankEffects.isHammer(tool)) {
+            player.awardStat(Stats.BLOCK_MINED.get(this))
+            player.causeFoodExhaustion(.005f)
+            PiggyBankEffects.smash(level, pos, state, blockEntity)
+        } else super.playerDestroy(level, player, pos, state, blockEntity, tool)
+    }
+
+    override fun fallOn(level: Level, state: BlockState, pos: BlockPos, entity: Entity, distance: Double) {
+        if (!level.isClientSide() && entity is FallingBlockEntity && entity.blockState.`is`(PiggyBankEffects.heavyBlocks)) {
+            (level.getBlockEntity(pos) as? PiggyBankEntity)?.let { PiggyBankEffects.smash(level, pos, state, it) }
+            level.removeBlock(pos, false)
+        }
+        super.fallOn(level, state, pos, entity, distance)
+    }
+
     companion object {
-        private val SHAPE = Shapes.or(
-            Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0),
-            Block.box(7.0, 2.0, 4.0, 9.0, 4.0, 5.0)
+        private val BODY = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0)
+        private val SHAPES = mapOf(
+            Direction.NORTH to Shapes.or(BODY, Block.box(7.0, 2.0, 4.0, 9.0, 4.0, 5.0)),
+            Direction.SOUTH to Shapes.or(BODY, Block.box(7.0, 2.0, 11.0, 9.0, 4.0, 12.0)),
+            Direction.WEST to Shapes.or(BODY, Block.box(4.0, 2.0, 7.0, 5.0, 4.0, 9.0)),
+            Direction.EAST to Shapes.or(BODY, Block.box(11.0, 2.0, 7.0, 12.0, 4.0, 9.0))
         )
     }
 }
@@ -157,7 +205,7 @@ object CoinageBlocks {
             put(name, PiggyBankBlock(name))
         }
     }
-    val items = piggyBanks.mapValues { (name, block) -> BlockItem(block, CoinageItems.properties(name).useBlockDescriptionPrefix().stacksTo(1)) }
+    val items = piggyBanks.mapValues { (name, block) -> PiggyBankItem(block, CoinageItems.properties(name).useBlockDescriptionPrefix().stacksTo(1)) }
     val shops = linkedMapOf(
         "shop" to ShopBlock(false, false, "shop"),
         "pawn_shop" to ShopBlock(true, false, "pawn_shop"),

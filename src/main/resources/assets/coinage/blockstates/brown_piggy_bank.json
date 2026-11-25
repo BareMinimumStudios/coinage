@@ -1,1 +1,19 @@
-{"variants": {"": {"model": "coinage:block/brown_piggy_bank"}}}
+{
+  "variants": {
+    "facing=north": {
+      "model": "coinage:block/brown_piggy_bank"
+    },
+    "facing=east": {
+      "model": "coinage:block/brown_piggy_bank",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "coinage:block/brown_piggy_bank",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "coinage:block/brown_piggy_bank",
+      "y": 270
+    }
+  }
+}
