@@ -13,6 +13,7 @@ import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import net.minecraft.client.gui.screens.inventory.MerchantScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.CreativeModeTab
 
@@ -27,8 +28,14 @@ internal object PursePopupClient {
     fun anchor(screen: AbstractContainerScreen<*>): Pair<Int, Int> {
         val access = screen as ContainerScreenAccessor
         val offset = if (screen is CreativeModeInventoryScreen) 38 else access.`coinage$getWidth`() - 16
-        val x = (access.`coinage$getLeft`() + offset).coerceIn(0, (screen.width - 11).coerceAtLeast(0))
-        val y = (access.`coinage$getTop`() + 5).coerceIn(0, (screen.height - 13).coerceAtLeast(0))
+        val settings = PurseClient.config.purseOffsets
+        val (dx, dy) = when (screen) {
+            is CreativeModeInventoryScreen -> settings.creativeX.get() to settings.creativeY.get()
+            is MerchantScreen -> settings.merchantX.get() to settings.merchantY.get()
+            else -> settings.inventoryX.get() to settings.inventoryY.get()
+        }
+        val x = (access.`coinage$getLeft`() + offset + dx).coerceIn(0, (screen.width - 11).coerceAtLeast(0))
+        val y = (access.`coinage$getTop`() + 5 + dy).coerceIn(0, (screen.height - 13).coerceAtLeast(0))
         return x to y
     }
 
