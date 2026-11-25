@@ -97,13 +97,22 @@ def verify(loader):
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
         mixin_files = {"coinage.mixins.json": {"CoinPickupMixin", "CoinBundleMixin"}}
         if loader == "fabric":
-            mixin_files["coinage.fabric.mixins.json"] = {"YigdInventoryMixin"}
+            optional_file = "coinage.fabric.mixins.json"
+            mixin_files[optional_file] = set()
+            optional_config = json.loads(archive.read(optional_file))
+            plugin = "net.bms.coinage.FabricCompatibilityMixins"
+            optional_classes = {
+                plugin.replace(".", "/") + ".class",
+                "net/bms/coinage/mixin/YigdInventoryMixin.class",
+            }
+            if optional_config.get("plugin") != plugin or optional_config.get("mixins") or not optional_classes <= names:
+                raise SystemExit("Fabric must conditionally register its packaged grave compatibility mixin")
             fabric_metadata = json.loads(archive.read(metadata_paths[loader]))
             if set(fabric_metadata["mixins"]) != set(mixin_files):
                 raise SystemExit("Fabric must register its shared and optional mixin configurations")
         for file, required_mixins in mixin_files.items():
             mixin_config = json.loads(archive.read(file))
-            if missing := required_mixins - set(mixin_config["mixins"]):
+            if missing := required_mixins - set(mixin_config.get("mixins", [])):
                 raise SystemExit(f"{loader} is missing server-side hooks in {file}: {', '.join(sorted(missing))}")
             if mixin_config["compatibilityLevel"] != f"JAVA_{pins['java_version']}":
                 raise SystemExit(f"{loader} has the wrong Java compatibility in {file}")

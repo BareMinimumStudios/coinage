@@ -3,5 +3,5 @@
   "minVersion": "0.8",
   "package": "net.bms.coinage.mixin",
   "compatibilityLevel": "${javaCompatibility}",
-  "mixins": ["YigdInventoryMixin"]
+  "plugin": "net.bms.coinage.FabricCompatibilityMixins"
 }
