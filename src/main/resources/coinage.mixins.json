@@ -10,7 +10,9 @@
     "MerchantPaymentsMixin",
     "MerchantTradesMixin",
     "MerchantCurrencyMixin",
-    "ShopClickGuardMixin"
+    "ShopClickGuardMixin",
+    "MerchantBagPricingMixin",
+    "VillagerBagDiscountMixin"
   ],
   "injectors": {
     "defaultRequire": 1
