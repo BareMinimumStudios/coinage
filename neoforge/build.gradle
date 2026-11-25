@@ -3,13 +3,17 @@ def pins = rootProject.targetPins
 neoForge {
     version = pins.neoforge_version
     runs {
+        configureEach { gameDirectory = project.file("run/${pins.minecraft_version}") }
         client { client() }
         server { server(); programArgument '--nogui' }
     }
     mods { coinage { sourceSet sourceSets.main } }
 }
 dependencies {
-    implementation pins.fzzy_neoforge_coordinate
+    implementation(pins.fzzy_neoforge_coordinate) {
+        // Fzzy marks KLF optional; Kotlin For Forge supplies our Kotlin runtime.
+        exclude group: 'dev.nyon', module: 'KotlinLangForge'
+    }
     implementation "thedarkcolour:kotlinforforge-neoforge:${pins.kotlin_for_forge_version}"
 }
 tasks.named('jar') { archiveClassifier.set('unshaded') }

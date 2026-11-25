@@ -18,3 +18,7 @@ if (rootProject.modernTarget) {
 } else {
     tasks.named('remapJar') { inputFile.set(tasks.named('shadowJar').flatMap { it.archiveFile }) }
 }
+
+loom {
+    runs.configureEach { runDir "run/${pins.minecraft_version}" }
+}

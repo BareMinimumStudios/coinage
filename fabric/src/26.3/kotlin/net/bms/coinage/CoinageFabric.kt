@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab
 
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -52,7 +53,12 @@ object CoinageFabric : ModInitializer {
                 .displayItems { _, output -> CoinageCreative.fill(output) }
                 .build()
         )
+        Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE,
+            Identifier.fromNamespaceAndPath(MOD_ID, "set_money"), SetMoneyFunction.CODEC)
         val config = EconomyConfig.register()
+        LootTableEvents.MODIFY.register { key, table, _, _ ->
+            ChestCurrencyLoot.pools(key.identifier().toString(), config.chestLoot).forEach { (_, pool) -> table.withPool(pool) }
+        }
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)
         ServerLivingEntityEvents.AFTER_DEATH.register(events::onDeath)

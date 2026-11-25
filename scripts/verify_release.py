@@ -37,6 +37,9 @@ def verify(loader):
             "net/bms/coinage/mixin/ContainerStackLimitMixin.class",
             "net/bms/coinage/internal/crunch/Crunch.class",
             "net/bms/coinage/EconomyConfig.class",
+            "net/bms/coinage/ChestLootConfig.class",
+            "net/bms/coinage/ChestCurrencyLoot.class",
+            "net/bms/coinage/SetMoneyFunction.class",
         }
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")

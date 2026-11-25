@@ -13,6 +13,7 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
+import net.neoforged.neoforge.event.LootTableLoadEvent
 import net.neoforged.neoforge.event.TagsUpdatedEvent
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.registries.RegisterEvent
@@ -75,7 +76,17 @@ class CoinageNeoForge(modBus: IEventBus) {
                 )
             }
         }
+        modBus.addListener { event: RegisterEvent ->
+            event.register(Registries.LOOT_FUNCTION_TYPE) { registry ->
+                registry.register(Identifier.fromNamespaceAndPath(MOD_ID, "set_money"), SetMoneyFunction.CODEC)
+            }
+        }
         val config = EconomyConfig.register()
+        NeoForge.EVENT_BUS.addListener { event: LootTableLoadEvent ->
+            if (!event.isCanceled) ChestCurrencyLoot.pools(event.name.toString(), config.chestLoot).forEach { (name, pool) ->
+                if (event.table.getPool(name) == null) event.table.addPool(pool.name(name).build())
+            }
+        }
         val commands = EconomyCommands(config)
         val events = EconomyEvents(config)
         NeoForge.EVENT_BUS.addListener { event: LivingDeathEvent ->

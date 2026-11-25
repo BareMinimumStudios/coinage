@@ -1,6 +1,8 @@
 package net.bms.coinage
 
 import me.fzzyhmstrs.fzzy_config.annotations.RootConfig
+import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.annotations.RequiresAction
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.util.Translatable
@@ -10,6 +12,8 @@ import net.minecraft.resources.Identifier
 @Translatable.Name("Economy")
 class EconomyConfig : Config(Identifier.fromNamespaceAndPath(MOD_ID, "economy")) {
     var conversion = CurrencyConfig()
+    @RequiresAction(Action.RELOAD_DATA)
+    var chestLoot = ChestLootConfig()
 
     @Translatable.Name("Pay merchants from purse")
     @Translatable.Desc("Withdraw real coins for merchant payment slots and refund unspent currency when trading closes.")
