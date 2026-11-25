@@ -31,6 +31,7 @@ internal object PurseClient {
     lateinit var config: PurseClientConfig
         private set
     private val numbers = NumberFormat.getIntegerInstance(Locale.ROOT)
+    private var purseKeyHeld = false
     private var revision = -1L
     private var previousBalance: Long? = null
     private var entries = emptyList<Pair<ItemStack, String>>()
@@ -41,6 +42,7 @@ internal object PurseClient {
     }
 
     fun reset() {
+        purseKeyHeld = false
         ClientPurseState.reset()
         previousBalance = null
         revision = -1
@@ -55,8 +57,9 @@ internal object PurseClient {
             while (key.consumeClick()) { }
             return
         }
+        if (client.gui.screen() == null && !key.isDown) purseKeyHeld = false
         while (key.consumeClick()) {
-            if (ClientPurseState.ready && client.gui.screen() == null) PursePopupClient.open()
+            if (client.gui.screen() == null && !purseKeyHeld && PursePopupClient.open()) purseKeyHeld = true
         }
         if (!ClientPurseState.ready || revision == ClientPurseState.revision) return
         val balance = ClientPurseState.balance
@@ -84,12 +87,21 @@ internal object PurseClient {
         entries = display
     }
 
-    fun openFromContainer(screen: Screen, event: KeyEvent): Boolean {
-        if (screen !is AbstractContainerScreen<*> || !key.matches(event)) return false
+    fun onScreenKeyPressed(screen: Screen, event: KeyEvent): Boolean {
+        if (!key.matches(event)) return false
+        if (screen !is AbstractContainerScreen<*> && screen !is PursePopupScreen) return false
         var focused = screen.focused
         while (focused is ContainerEventHandler) focused = focused.focused
         if (focused is EditBox || focused is MultiLineEditBox) return false
-        return PursePopupClient.open(screen)
+        if (purseKeyHeld) return true
+
+        val opened = PursePopupClient.open(screen)
+        if (opened) purseKeyHeld = true
+        return opened
+    }
+
+    fun onScreenKeyReleased(event: KeyEvent) {
+        if (key.matches(event)) purseKeyHeld = false
     }
 
     fun inventoryButtons(screen: Screen): List<Button> {

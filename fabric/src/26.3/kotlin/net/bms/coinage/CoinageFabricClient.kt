@@ -57,7 +57,11 @@ object CoinageFabricClient : ClientModInitializer {
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "purse")) { graphics, _ -> PurseClient.render(graphics) }
         ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
             ScreenKeyboardEvents.allowKeyPress(screen).register { active, event ->
-                !PurseClient.openFromContainer(active, event)
+                !PurseClient.onScreenKeyPressed(active, event)
+            }
+            ScreenKeyboardEvents.allowKeyRelease(screen).register { _, event ->
+                PurseClient.onScreenKeyReleased(event)
+                true
             }
             val buttons = PurseClient.inventoryButtons(screen)
             val shopButtons = ShopClient.buttons(screen) + PurseAmountClient.buttons(screen)

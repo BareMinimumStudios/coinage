@@ -133,7 +133,6 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
     }
 
     override fun keyPressed(event: KeyEvent): Boolean {
-        if (PurseClient.key.matches(event)) { onClose(); return true }
         if (client.options.keyInventory.matches(event)) {
             onClose()
             parent.onClose()

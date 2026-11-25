@@ -48,7 +48,10 @@ class CoinageNeoForgeClient(modBus: IEventBus) {
         NeoForge.EVENT_BUS.addListener { event: ClientTickEvent.Post -> PurseClient.tick(); PurseAmountClient.tick(); ShopClient.tick() }
         NeoForge.EVENT_BUS.addListener { event: RenderGuiEvent.Post -> PurseClient.render(event.guiGraphics) }
         NeoForge.EVENT_BUS.addListener { event: ScreenEvent.KeyPressed.Pre ->
-            if (PurseClient.openFromContainer(event.screen, event.keyEvent)) event.isCanceled = true
+            if (PurseClient.onScreenKeyPressed(event.screen, event.keyEvent)) event.isCanceled = true
+        }
+        NeoForge.EVENT_BUS.addListener { event: ScreenEvent.KeyReleased.Pre ->
+            PurseClient.onScreenKeyReleased(event.keyEvent)
         }
         NeoForge.EVENT_BUS.addListener { event: ScreenEvent.Init.Post ->
             PurseClient.inventoryButtons(event.screen).forEach(event::addListener)
