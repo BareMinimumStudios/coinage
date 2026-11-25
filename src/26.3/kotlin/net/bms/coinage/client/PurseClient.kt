@@ -107,9 +107,14 @@ internal object PurseClient {
     fun inventoryButtons(screen: Screen): List<Button> {
         val controls = PursePopupClient.buttons(screen)
         if (screen !is InventoryScreen || !config.inventoryButton) return controls
+        val settingsX = (screen.width - 26).coerceAtLeast(0)
+        val purseButton = controls.firstOrNull()
+        val x = if (purseButton != null && settingsX < purseButton.x + purseButton.width &&
+            settingsX + 20 > purseButton.x && 6 < purseButton.y + purseButton.height && 26 > purseButton.y
+        ) (purseButton.x - 24).coerceAtLeast(0) else settingsX
         return controls + Button.builder(Component.literal("...")) {
             ConfigApiJava.openScreen("coinage")
-        }.bounds(screen.width - 26, 6, 20, 20)
+        }.bounds(x, 6, 20, 20)
             .tooltip(Tooltip.create(Component.translatable("gui.coinage.configure"))).build()
     }
 
