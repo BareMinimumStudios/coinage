@@ -37,6 +37,26 @@ Server settings use Fzzy Config under `config/coinage/`. Merchant definitions ar
 
 Use the same Coinage version on clients and servers.
 
+## Mob currency drops
+
+Edit the `[mobDrops]` table in the server's `config/coinage/economy.toml`. Entries set the base value in bronze coins for kills credited to a player.
+
+```toml
+[mobDrops]
+"minecraft:pillager" = 75
+"#example:currency_drops" = 40
+```
+
+To use the tag in this example, add `data/example/tags/entity_type/currency_drops.json` to a datapack.
+
+```json
+{
+  "values": ["minecraft:zombie", "minecraft:skeleton"]
+}
+```
+
+An exact entity ID takes precedence over a tag, a tag takes precedence over a namespace such as `@example`, and a namespace takes precedence over a mob category such as `€monster`. Add an exact entry with value `0` to exclude one mob. Reload datapacks after editing tags. The economy settings also control random variation, health scaling, and the Looting bonus.
+
 ## Build locally
 
 On Windows, run `./scripts/build.ps1 -Loader both -Target all`. On Linux, run `bash scripts/build.sh both all`. The scripts build each selected target and verify the release JARs in `build/<version>/<loader>/libs/`. Artifact verification requires Python 3.11 or newer.

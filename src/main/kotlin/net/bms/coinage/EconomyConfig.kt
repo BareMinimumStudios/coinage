@@ -32,7 +32,7 @@ class EconomyConfig : Config(ResourceLocation.fromNamespaceAndPath(MOD_ID, "econ
         }
 
     @Translatable.Name("Mob coin drops")
-    @Translatable.Desc("Base bronze-coin value per entity ID. Only kills credited to a player drop coins.")
+    @Translatable.Desc("Base bronze-coin value by entity ID, #tag, @namespace, or €category. Only kills credited to a player drop coins.")
     var mobDrops: Map<String, Int> =
         linkedMapOf("minecraft:pillager" to 75, "minecraft:vindicator" to 75, "minecraft:evoker" to 75)
 

@@ -33,13 +33,13 @@ internal class EconomyEvents(private val config: EconomyConfig) {
         return dropValues.getOrPut(entity.type) {
             val id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.type)
 
+            current[id.toString()]?.let { return@getOrPut it.coerceAtLeast(0).toLong() }
             var result = 0L
 
             var priority = -1
 
             for ((selector, amount) in current) {
                 val rank = when {
-                    selector == id.toString() -> 3
 
                     selector.startsWith("#") && entity.type.builtInRegistryHolder().tags().anyMatch {
                         it.location().toString() == selector.substring(1)
@@ -65,7 +65,6 @@ internal class EconomyEvents(private val config: EconomyConfig) {
 
     fun onDeath(entity: LivingEntity, source: DamageSource) {
         val level = entity.level() as? ServerLevel ?: return
-
 
         if (entity is ServerPlayer) {
             if (level.gameRules.get(GameRules.KEEP_INVENTORY)) return
