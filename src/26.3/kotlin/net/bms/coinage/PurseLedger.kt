@@ -13,6 +13,15 @@ internal class PurseLedger : SavedData() {
     private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
 
+    private val autoCollectPlayers = HashSet<UUID>()
+
+    fun autoCollect(player: UUID): Boolean = player in autoCollectPlayers
+
+    fun setAutoCollect(player: UUID, enabled: Boolean) {
+        val changed = if (enabled) autoCollectPlayers.add(player) else autoCollectPlayers.remove(player)
+        if (changed) setDirty()
+    }
+
     fun balance(player: UUID): Long = balances[player] ?: 0L
 
     fun setBalance(player: UUID, balance: Long) {
@@ -51,9 +60,12 @@ internal class PurseLedger : SavedData() {
         internal val codec: Codec<PurseLedger> = RecordCodecBuilder.create { instance ->
             instance.group(
                 Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.LONG).fieldOf("balances")
-                    .forGetter<PurseLedger> { it.balances.toMap() }
-            ).apply(instance) { values ->
+                    .forGetter<PurseLedger> { it.balances.toMap() },
+                UUIDUtil.STRING_CODEC.listOf().optionalFieldOf("auto_collect", emptyList())
+                    .forGetter<PurseLedger> { it.autoCollectPlayers.sorted() }
+            ).apply(instance) { values, autoCollect ->
                 PurseLedger().apply {
+                    autoCollectPlayers.addAll(autoCollect)
                     values.forEach { (id, value) -> if (value > 0) balances[id] = value }
                 }
             }

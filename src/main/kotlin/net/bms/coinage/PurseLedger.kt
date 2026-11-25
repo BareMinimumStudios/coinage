@@ -11,6 +11,15 @@ internal class PurseLedger : SavedData() {
     private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
 
+    private val autoCollectPlayers = HashSet<UUID>()
+
+    fun autoCollect(player: UUID): Boolean = player in autoCollectPlayers
+
+    fun setAutoCollect(player: UUID, enabled: Boolean) {
+        val changed = if (enabled) autoCollectPlayers.add(player) else autoCollectPlayers.remove(player)
+        if (changed) setDirty()
+    }
+
     fun balance(player: UUID): Long = balances[player] ?: 0L
 
     fun setBalance(player: UUID, balance: Long) {
@@ -49,6 +58,9 @@ internal class PurseLedger : SavedData() {
         val purseBalances = CompoundTag()
         balances.forEach { (player, balance) -> purseBalances.putLong(player.toString(), balance) }
         tag.put("balances", purseBalances)
+        val autoCollect = CompoundTag()
+        autoCollectPlayers.forEach { autoCollect.putBoolean(it.toString(), true) }
+        tag.put("auto_collect", autoCollect)
         return tag
     }
 
@@ -71,6 +83,12 @@ internal class PurseLedger : SavedData() {
                 }
                 val balance = balances.getLong(key)
                 if (balance > 0) ledger.balances[player] = balance
+            }
+            val autoCollect = tag.getCompound("auto_collect")
+            for (key in autoCollect.allKeys) {
+                if (autoCollect.getBoolean(key)) {
+                    runCatching { UUID.fromString(key) }.getOrNull()?.let(ledger.autoCollectPlayers::add)
+                }
             }
             return ledger
         }

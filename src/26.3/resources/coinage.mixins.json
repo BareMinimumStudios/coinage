@@ -8,6 +8,7 @@
     "ItemStackCountMixin",
     "ContainerStackLimitMixin",
     "MerchantPaymentsMixin",
+    "CoinPickupMixin",
     "MerchantTradesMixin",
     "MerchantCurrencyMixin",
     "ShopClickGuardMixin",

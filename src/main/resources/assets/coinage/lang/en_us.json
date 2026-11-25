@@ -76,6 +76,8 @@
   "gui.coinage.gained": "+%s bronze",
   "gui.coinage.lost": "−%s bronze",
   "gui.coinage.open_purse": "Open your purse",
+  "command.coinage.autocollect.on": "Automatic coin collection is on.",
+  "command.coinage.autocollect.off": "Automatic coin collection is off.",
   "gui.coinage.configure": "Coinage settings",
   "gui.coinage.automation_input": "Hopper input: %s",
   "gui.coinage.automation_output": "Hopper output: %s",

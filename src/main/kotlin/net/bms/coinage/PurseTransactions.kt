@@ -15,6 +15,20 @@ internal object PurseTransactions {
         return unit * stack.count
     }
 
+    @JvmStatic
+    fun collectCoin(player: ServerPlayer, stack: ItemStack): Boolean {
+        val coin = stack.item as? CoinItem ?: return false
+        val ledger = PurseLedger.get(player.server)
+        if (!ledger.autoCollect(player.uuid) || !ItemStack.isSameItemSameComponents(stack, ItemStack(coin))) return false
+        val amount = value(stack) ?: return false
+        val balance = ledger.balance(player.uuid)
+        if (amount <= 0 || balance > Long.MAX_VALUE - amount) return false
+
+        stack.count = 0
+        ledger.setBalance(player.uuid, balance + amount)
+        return true
+    }
+
     fun deposit(player: ServerPlayer, onlySlot: Int? = null): Long? {
         val inventory = player.inventory
         val slots = if (onlySlot == null) (0 until inventory.containerSize).toList() else listOf(onlySlot)

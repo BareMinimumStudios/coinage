@@ -20,6 +20,11 @@ import net.minecraft.world.phys.BlockHitResult
 internal class EconomyCommands(private val config: EconomyConfig) {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
         MerchantCommands.register(dispatcher)
+        dispatcher.register(literal("coinage").then(literal("autocollect")
+            .executes { autoCollect(it, null, toggle = false) }
+            .then(literal("toggle").executes { autoCollect(it, null, toggle = true) })
+            .then(argument("enabled", BoolArgumentType.bool())
+                .executes { autoCollect(it, BoolArgumentType.getBool(it, "enabled"), toggle = false) })))
         dispatcher.register(literal("coinage").then(literal("shop").then(literal("automation")
             .executes { shopAutomation(it, null) }
             .then(argument("enabled", BoolArgumentType.bool())
@@ -58,6 +63,17 @@ internal class EconomyCommands(private val config: EconomyConfig) {
             .then(literal("pay").requires { it.entity is ServerPlayer && config.playerPayments }
                 .then(argument("player", EntityArgument.player())
                     .then(CoinAmountArgument.argument().executes(::pay)))))
+    }
+
+    private fun autoCollect(context: CommandContext<CommandSourceStack>, enabled: Boolean?, toggle: Boolean): Int {
+        val player = context.source.playerOrException
+        val ledger = PurseLedger.get(player.level().server)
+        val current = ledger.autoCollect(player.uuid)
+        val result = enabled ?: if (toggle) !current else current
+        ledger.setAutoCollect(player.uuid, result)
+        val message = if (result) "command.coinage.autocollect.on" else "command.coinage.autocollect.off"
+        context.source.sendSuccess({ Component.translatable(message) }, false)
+        return 1
     }
 
     private fun showRates(context: CommandContext<CommandSourceStack>): Int {
