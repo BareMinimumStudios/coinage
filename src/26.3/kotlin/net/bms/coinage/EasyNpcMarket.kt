@@ -49,7 +49,7 @@ object EasyNpcMarket {
         val session = sessions[player.containerMenu] ?: return false
         val config = CurrencyValues.configuration?.market
         return session.dirty || session.expression != config?.pricePercent ||
-            session.revision != (if (config?.enabled == true) market(player).shopMarket.revision else -1L)
+            session.revision != (if (config?.enabled == true) market(player, config).shopMarket.revision else -1L)
     }
 
     @JvmStatic
@@ -69,23 +69,25 @@ object EasyNpcMarket {
         val session = sessions[player?.containerMenu]
         val trade = session?.originals?.get(offer)
         merchant.notifyTrade(trade?.original ?: offer)
-        if (player == null || session == null || trade == null ||
-            CurrencyValues.configuration?.market?.enabled != true) return
-        val ledger = market(player)
+        val config = CurrencyValues.configuration?.market
+        if (player == null || session == null || trade == null || config?.enabled != true) return
+        val ledger = market(player, config)
         ledger.shopMarket.record(trade.item, trade.units)
         ledger.setDirty()
         session.dirty = true
         offer.setToOutOfStock()
     }
 
-    private fun market(player: ServerPlayer): PurseLedger {
+    private fun market(player: ServerPlayer, config: MarketConfig): PurseLedger {
         val server = player.level().server
-        return PurseLedger.get(server).also { it.shopMarket.refresh(server.overworld().gameTime, it::setDirty) }
+        return PurseLedger.get(server).also {
+            it.shopMarket.refresh(server.overworld().gameTime, config.resetIntervalSeconds.get(), it::setDirty)
+        }
     }
 
     private fun reprice(player: ServerPlayer, session: Session): Boolean {
         val config = CurrencyValues.configuration?.market
-        val market = if (config?.enabled == true) market(player).shopMarket else null
+        val market = if (config?.enabled == true) market(player, config).shopMarket else null
         session.prices = MerchantOffers()
         session.originals.clear()
         session.dirty = false

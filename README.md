@@ -55,12 +55,13 @@ Place and configure a shop or pawn shop. Use an inexhaustible variant for a serv
 [market]
 enabled = true
 pricePercent = "100 + pressure + spillover"
+resetIntervalSeconds = 7200
 remoteShops = { town_goods = "minecraft:overworld 20 64 8", town_buyer = "minecraft:overworld 22 64 8" }
 ```
 
 Add an **Execute as player** command action in Easy NPC with `coinage shop open town_goods`. If your Easy NPC version uses a command allowlist, add `coinage` as a normal player command. The player can also run this command directly. List only public locations and keep their chunks loaded, for example with `/forceload add 20 8` in the shop's dimension. Remote menus allow trades and leave management at the physical shop. See [Easy NPC command actions](https://github.com/MarkusBordihn/BOs-Easy-NPC/wiki/Actions).
 
-Market pricing is opt-in. All Coinage shop and pawn-shop trades share a market per world, keyed by the traded item ID. Purchases raise its pressure and sales lower it. Oversupply of other goods adds a small positive spillover. The default Crunch expression uses `pressure` from −50 to 50 and `spillover` from 0 to 10. The result is clamped to 50–150 percent of each offer's base price. Use separate retail and buyback base prices to prevent profitable round trips. The market persists on restart and clears after a random 24,000–48,000 ticks of world time.
+Market pricing is opt-in. All Coinage shop and pawn-shop trades share a market per world, keyed by the traded item ID. Purchases raise its pressure and sales lower it. Oversupply of other goods adds a small positive spillover. The default Crunch expression uses `pressure` from −50 to 50 and `spillover` from 0 to 10. The result is clamped to 50–150 percent of each offer's base price. Use separate retail and buyback base prices to prevent profitable round trips. The market persists across restarts and resets to base prices every two hours of world time by default (144,000 ticks). Set `[market].resetIntervalSeconds` in Fzzy Config to change the interval. The current reset deadline is kept, and the new setting takes effect when the following deadline is scheduled.
 
 To use the built-in Easy NPC trading screen instead, set up an NPC trade with one item on each side and a plain Coinage coin stack or money bag on one side. With market pricing enabled, those trades use the same world market as Coinage shops. The NPC editor keeps the configured base price. Emerald trades, two-input trades, and vanilla villagers keep their existing pricing.
 

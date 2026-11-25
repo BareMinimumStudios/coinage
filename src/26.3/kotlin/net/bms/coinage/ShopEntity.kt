@@ -205,10 +205,11 @@ class ShopEntity(pos: BlockPos, state: BlockState) : BlockEntity(CoinageBlocks.s
     }
 
     internal fun market(player: ServerPlayer): ShopMarket? {
-        if (CurrencyValues.configuration?.market?.enabled != true) return null
+        val config = CurrencyValues.configuration?.market ?: return null
+        if (!config.enabled) return null
         val server = player.level().server
         val ledger = PurseLedger.get(server)
-        return ledger.shopMarket.also { it.refresh(server.overworld().gameTime, ledger::setDirty) }
+        return ledger.shopMarket.also { it.refresh(server.overworld().gameTime, config.resetIntervalSeconds.get(), ledger::setDirty) }
     }
 
     internal fun quote(offer: ShopOffer, market: ShopMarket?): Long {

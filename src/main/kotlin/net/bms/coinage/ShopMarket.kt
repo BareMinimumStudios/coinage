@@ -3,7 +3,6 @@ package net.bms.coinage
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import java.math.BigInteger
-import kotlin.random.Random
 import redempt.crunch.Crunch
 
 internal class ShopMarket {
@@ -12,10 +11,10 @@ internal class ShopMarket {
     var revision = 0L
         private set
 
-    fun refresh(now: Long, dirty: () -> Unit) {
+    fun refresh(now: Long, intervalSeconds: Int, dirty: () -> Unit) {
         if (resetAt > now) return
         pressure.clear()
-        resetAt = now + Random.nextLong(24_000L, 48_001L)
+        resetAt = now + intervalSeconds * 20L
         revision++
         dirty()
     }
