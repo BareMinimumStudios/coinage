@@ -1,5 +1,6 @@
 """Check the release artifacts built by the selected loader modules."""
 
+from io import BytesIO
 import json
 import os
 import struct
@@ -67,7 +68,6 @@ def verify(loader):
             "net/bms/coinage/mixin/ItemStackCountMixin.class",
             "net/bms/coinage/mixin/StackSizeComponentMixin.class",
             "net/bms/coinage/mixin/ContainerStackLimitMixin.class",
-            "net/bms/coinage/internal/crunch/Crunch.class",
             "net/bms/coinage/EconomyConfig.class",
             "net/bms/coinage/ChestLootConfig.class",
             "net/bms/coinage/ChestCurrencyLoot.class",
@@ -86,11 +86,24 @@ def verify(loader):
         ))
         if missing := required - names:
             raise SystemExit(f"{loader} is missing {', '.join(sorted(missing))}")
-        if any(name.startswith("redempt/crunch/") for name in names):
-            raise SystemExit(f"{loader} contains an unrelocated copy of Crunch")
-        forbidden = ("io/wispforest/", "org/ladysnake/cca/", "dev/onyxstudios/cca/", "redempt/crunch/")
+        forbidden = ("io/wispforest/", "org/ladysnake/cca/", "dev/onyxstudios/cca/",
+                     "redempt/crunch/", "net/bms/coinage/internal/crunch/")
         if any(name.startswith(forbidden) for name in names):
-            raise SystemExit(f"{loader} contains a removed or unrelocated runtime dependency")
+            raise SystemExit(f"{loader} contains a removed or unpacked runtime dependency")
+        if loader == "fabric":
+            declared = json.loads(archive.read(metadata_paths[loader])).get("jars", [])
+            crunch_jars = [entry["file"] for entry in declared if Path(entry["file"]).name.startswith("Crunch-")]
+        else:
+            declared = json.loads(archive.read("META-INF/jarjar/metadata.json"))["jars"]
+            crunch_jars = [
+                entry["path"] for entry in declared
+                if entry["identifier"] == {"group": "com.github.boxbeam", "artifact": "Crunch"}
+            ]
+        if len(crunch_jars) != 1 or crunch_jars[0] not in names:
+            raise SystemExit(f"{loader} must declare and bundle one Crunch jar")
+        with ZipFile(BytesIO(archive.read(crunch_jars[0]))) as crunch:
+            if "redempt/crunch/Crunch.class" not in crunch.namelist():
+                raise SystemExit(f"{loader} has an invalid nested Crunch jar")
         expected_major = int(pins["java_version"]) + 44
         for name in sorted(names):
             if name.startswith("net/bms/coinage/") and name.endswith(".class") and not name.startswith("net/bms/coinage/internal/"):

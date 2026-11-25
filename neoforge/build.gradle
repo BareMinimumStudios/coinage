@@ -10,6 +10,7 @@ neoForge {
     mods { coinage { sourceSet sourceSets.main } }
 }
 dependencies {
+    jarJar(rootProject.crunchDependency) { transitive = false }
     implementation(pins.fzzy_neoforge_coordinate) {
         // Fzzy marks KLF optional; Kotlin For Forge supplies our Kotlin runtime.
         exclude group: 'dev.nyon', module: 'KotlinLangForge'
@@ -18,7 +19,3 @@ dependencies {
 }
 // Plain Java libraries must also be visible to NeoForge development runs.
 configurations.additionalRuntimeClasspath.extendsFrom(configurations.expressionEngine)
-
-tasks.named('jar') { archiveClassifier.set('unshaded') }
-tasks.named('shadowJar') { archiveClassifier.set('') }
-tasks.named('assemble') { dependsOn tasks.named('shadowJar') }

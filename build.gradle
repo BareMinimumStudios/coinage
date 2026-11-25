@@ -2,7 +2,6 @@ import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 
 plugins {
     id 'base'
-    id 'com.gradleup.shadow' version '9.3.1' apply false
     id 'org.jetbrains.kotlin.jvm' apply false
     id 'net.fabricmc.fabric-loom-remap' version '1.17.21' apply false
     id 'net.fabricmc.fabric-loom' version '1.17.21' apply false
@@ -18,6 +17,7 @@ profileFile.withReader('UTF-8') { pins.load(it) }
 ext.targetPins = pins
 ext.modernTarget = selectedTarget == '26.3'
 ext.targetJava = pins.java_version.toInteger()
+ext.crunchDependency = "com.github.boxbeam:Crunch:0c7d52fc19"
 
 allprojects {
     group = 'net.bms'
@@ -25,7 +25,6 @@ allprojects {
 }
 subprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: 'com.gradleup.shadow'
     layout.buildDirectory.set(rootProject.layout.buildDirectory.dir("${selectedTarget}/${project.name}"))
     repositories {
         mavenCentral()
@@ -98,7 +97,7 @@ subprojects {
         implementation.extendsFrom(expressionEngine)
     }
     dependencies {
-        expressionEngine 'com.github.boxbeam:Crunch:0c7d52fc19'
+        expressionEngine rootProject.crunchDependency
         testImplementation platform('org.junit:junit-bom:5.14.0')
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -117,11 +116,6 @@ subprojects {
         ]
         inputs.properties(values)
         filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml', 'coinage.mixins.json']) { expand(values) }
-    }
-    tasks.named('shadowJar') {
-        configurations = [project.configurations.expressionEngine]
-        relocate 'redempt.crunch', 'net.bms.coinage.internal.crunch'
-        exclude 'META-INF/maven/**'
     }
     tasks.withType(Jar).configureEach {
         from(rootProject.file('LICENSE'))

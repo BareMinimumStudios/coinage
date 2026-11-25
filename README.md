@@ -11,7 +11,7 @@ Pick the Coinage JAR for your exact Minecraft version and loader. Install Coinag
 | 1.21.1 | 21 | Fabric API, Fabric Language Kotlin, Fzzy Config | Kotlin for Forge, Fzzy Config |
 | 26.3 | 25 | Fabric API, Fabric Language Kotlin, Fzzy Config | Kotlin for Forge, Fzzy Config |
 
-The [target files](targets/) record the versions used to build and test each release. Crunch is bundled.
+The [target files](targets/) record the versions used to build and test each release. Crunch is bundled inside the Coinage JAR.
 
 ## Use the purse
 
