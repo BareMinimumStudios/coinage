@@ -13,6 +13,7 @@ import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
 
 internal class PurseLedger : SavedData() {
+    private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
     private val legacyImports = HashSet<UUID>()
 
@@ -34,6 +35,7 @@ internal class PurseLedger : SavedData() {
         if (balance == balance(player)) return
         if (balance == 0L) balances.remove(player) else balances[player] = balance
         setDirty()
+        server?.let { PurseSync.changed(it, player) }
     }
 
     fun transfer(from: UUID, to: UUID, amount: Long): Boolean {
@@ -79,6 +81,6 @@ internal class PurseLedger : SavedData() {
             Identifier.fromNamespaceAndPath(MOD_ID, "purses"), ::PurseLedger, codec
         )
 
-        fun get(server: MinecraftServer): PurseLedger = server.overworld().dataStorage.computeIfAbsent(type)
+        fun get(server: MinecraftServer): PurseLedger = server.overworld().dataStorage.computeIfAbsent(type).also { it.server = server }
     }
 }

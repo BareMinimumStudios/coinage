@@ -4,12 +4,28 @@
   "version": "${version}",
   "name": "Coinage",
   "description": "Persistent player purses and economy administration.",
-  "authors": ["pokesmells", "Bare Minimum Studios"],
+  "authors": [
+    "pokesmells",
+    "Bare Minimum Studios"
+  ],
   "license": "BML-1.0",
   "entrypoints": {
-    "main": [{"adapter": "kotlin", "value": "net.bms.coinage.CoinageFabric"}]
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "net.bms.coinage.CoinageFabric"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "net.bms.coinage.CoinageFabricClient"
+      }
+    ]
   },
-  "mixins": ["coinage.mixins.json"],
+  "mixins": [
+    "coinage.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.19.5",
     "fabric-api": "*",

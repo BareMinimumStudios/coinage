@@ -1,0 +1,37 @@
+package net.bms.coinage
+
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.resources.Identifier
+
+internal object PursePayloads {
+    const val PROTOCOL = 1
+    private fun <T : CustomPacketPayload> type(path: String) =
+        CustomPacketPayload.Type<T>(Identifier.fromNamespaceAndPath(MOD_ID, path))
+    val HELLO = type<Hello>("purse_hello")
+    val OPEN = type<Open>("purse_open")
+    val SNAPSHOT = type<Snapshot>("purse_snapshot")
+
+    val HELLO_CODEC = codec({ Hello(it.readVarInt()) }, { buffer, value -> buffer.writeVarInt(value.protocol) })
+    val OPEN_CODEC: StreamCodec<RegistryFriendlyByteBuf, Open> = StreamCodec.unit(Open())
+    val SNAPSHOT_CODEC = codec({ buffer ->
+        Snapshot(buffer.readVarLong(), ExchangeRates(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt()))
+    }, { buffer, value ->
+        buffer.writeVarLong(value.balance)
+        buffer.writeVarInt(value.rates.bronzePerIron)
+        buffer.writeVarInt(value.rates.ironPerSilver)
+        buffer.writeVarInt(value.rates.silverPerGold)
+        buffer.writeVarInt(value.rates.goldPerPlatinum)
+    })
+
+    private fun <T : Any> codec(read: (RegistryFriendlyByteBuf) -> T, write: (RegistryFriendlyByteBuf, T) -> Unit) =
+        object : StreamCodec<RegistryFriendlyByteBuf, T> {
+            override fun decode(buffer: RegistryFriendlyByteBuf): T = read(buffer)
+            override fun encode(buffer: RegistryFriendlyByteBuf, value: T) = write(buffer, value)
+        }
+
+    data class Hello(val protocol: Int = PROTOCOL) : CustomPacketPayload { override fun type() = HELLO }
+    class Open : CustomPacketPayload { override fun type() = OPEN }
+    data class Snapshot(val balance: Long, val rates: ExchangeRates) : CustomPacketPayload { override fun type() = SNAPSHOT }
+}

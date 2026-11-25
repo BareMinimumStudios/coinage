@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.saveddata.SavedData
 
 internal class PurseLedger : SavedData() {
+    private var server: MinecraftServer? = null
     private val balances = HashMap<UUID, Long>()
     private val legacyImports = HashSet<UUID>()
 
@@ -29,6 +30,7 @@ internal class PurseLedger : SavedData() {
         if (balance == balance(player)) return
         if (balance == 0L) balances.remove(player) else balances[player] = balance
         setDirty()
+        server?.let { PurseSync.changed(it, player) }
     }
 
     fun transfer(from: UUID, to: UUID, amount: Long): Boolean {
@@ -71,7 +73,7 @@ internal class PurseLedger : SavedData() {
         private val factory = Factory(::PurseLedger, { tag, _ -> load(tag) }, null)
 
         fun get(server: MinecraftServer): PurseLedger =
-            server.overworld().dataStorage.computeIfAbsent(factory, MOD_ID)
+            server.overworld().dataStorage.computeIfAbsent(factory, MOD_ID).also { it.server = server }
 
         internal fun load(tag: CompoundTag): PurseLedger {
             val ledger = PurseLedger()

@@ -70,5 +70,12 @@
   "command.coinage.trades.status": "Loaded %s trades for %s merchant profiles; %s rejected definitions.",
   "command.coinage.trades.reloaded": "Reloaded Coinage merchant definitions. Existing offers stay unchanged.",
   "command.coinage.trades.not_merchant": "That entity does not trade.",
-  "command.coinage.trades.inspected": "%s has %s available offers."
+  "command.coinage.trades.inspected": "%s has %s available offers.",
+  "key.coinage.purse": "Open purse",
+  "key.categories.coinage": "Coinage",
+  "key.category.coinage.controls": "Coinage",
+  "gui.coinage.gained": "+%s bronze",
+  "gui.coinage.lost": "−%s bronze",
+  "gui.coinage.open_purse": "Open your purse",
+  "gui.coinage.configure": "Coinage settings"
 }
