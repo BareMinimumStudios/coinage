@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-## [0.1.1-dev] - 2026-11-27
+## [0.1.1] - 2026-11-27
 
 ### Changed
 
@@ -24,6 +24,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Open Coinage shops through Easy NPC or apply market prices to eligible Easy NPC trades.
 - Configure the economy through Fzzy Config and customize merchant offers and loot through datapacks.
 
-[Unreleased]: https://github.com/BareMinimumStudios/coinage/compare/v0.1.1-dev...HEAD
-[0.1.1-dev]: https://github.com/BareMinimumStudios/coinage/compare/7c9dbe9...v0.1.1-dev
+[Unreleased]: https://github.com/BareMinimumStudios/coinage/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/BareMinimumStudios/coinage/compare/7c9dbe9...v0.1.1
 [0.1.0-dev]: https://modrinth.com/mod/coinage-poke097/versions
