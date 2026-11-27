@@ -6,6 +6,14 @@ Physical coins, a personal purse, player shops, and configurable trading for Min
 
 **Project description**
 
+![Coinage banner](https://raw.githubusercontent.com/BareMinimumStudios/coinage/main/docs/branding/banner.png)
+
+**Minecraft 1.21.1 and 26.3 · Fabric and NeoForge · Client and server**
+
+[Documentation](https://github.com/BareMinimumStudios/coinage#readme) · [Source code](https://github.com/BareMinimumStudios/coinage) · [Report an issue](https://github.com/BareMinimumStudios/coinage/issues) · [Discord community](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+
+## Coinage
+
 Find coins in loot, earn them from eligible mobs and merchants, and spend them at shops run by other players. Coinage brings a physical currency and a configurable economy to Minecraft.
 
 ## Earn, carry, and spend
@@ -31,6 +39,6 @@ Fabric and NeoForge builds target **Minecraft 1.21.1** (Java 21) and **Minecraft
 - **Fabric** · Fabric API, Fabric Language Kotlin, and Fzzy Config
 - **NeoForge** · Kotlin for Forge and Fzzy Config
 
-See the [Coinage README](https://github.com/BareMinimumStudios/coinage#readme) for commands, configuration examples, and datapack setup. Report issues in the [GitHub issue tracker](https://github.com/BareMinimumStudios/coinage/issues).
+## Credits
 
 By pokesmells and Bare Minimum Studios. Coinage uses the [Bare Minimum License](https://github.com/BareMinimumStudios/coinage/blob/main/LICENSE). See the [upstream attribution](https://github.com/BareMinimumStudios/coinage/blob/main/NOTICE.md) for material adapted from Numismatic Overhaul.
