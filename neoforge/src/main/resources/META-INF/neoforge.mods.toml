@@ -6,6 +6,7 @@ license="BML-1.0"
 modId="coinage"
 version="${version}"
 displayName="Coinage"
+logoFile="assets/coinage/icon.png"
 authors="pokesmells, Bare Minimum Studios"
 description="A four-tier currency system with player purses, merchant trades, shops, and piggy banks."
 
