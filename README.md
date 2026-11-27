@@ -1,6 +1,8 @@
 # Coinage
 
-Coinage adds physical coins, a personal purse, piggy banks, player shops, pawn shops, and currency trades for villagers and wandering traders. By pokesmells and Bare Minimum Studios.
+Coinage adds physical coins, a personal purse, piggy banks, player shops, pawn shops, and currency trades for villagers and wandering traders.
+
+By pokesmells and Bare Minimum Studios.
 
 ## Install
 
@@ -15,7 +17,7 @@ The [target files](targets/) record the versions used to build and test each rel
 
 ## Use the purse
 
-Press **B**, click the purse icon in your inventory, or run `/coinage purse`. Use the arrows to choose denominations. Hold Shift to adjust by ten. The extraction button withdraws the selected coins, and Ctrl-clicking it puts the selected value into one money bag. Shift-click the purse icon to deposit all currency from your inventory. Shift + Ctrl on the extraction button withdraws the full balance as coins if they fit.
+Press **B**, click the purse icon in your inventory, or run `/coinage purse`. Use the arrows to adjust the number of coins for each denomination. Hold **Shift** to adjust by ten. The extraction button withdraws the selected coins, and **Ctrl**-clicking it puts the selected value into one money bag. **Shift**-click the purse icon to deposit all currency from your inventory. Hold **Shift + Ctrl** while clicking the extraction button to withdraw the full balance as coins if they fit.
 
 Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 1 gold, and 100 gold to 1 platinum. Servers can change the three ratios in Fzzy Config. Enter plain amounts in bronze or use expressions such as `2 * silver + 5 * bronze`. Press Tab in a command to complete a coin name and see its value in bronze.
 
@@ -61,7 +63,9 @@ remoteShops = { town_goods = "minecraft:overworld 20 64 8", town_buyer = "minecr
 
 Add an **Execute as player** command action in Easy NPC with `coinage shop open town_goods`. If your Easy NPC version uses a command allowlist, add `coinage` as a normal player command. The player can also run this command directly. List only public locations and keep their chunks loaded, for example with `/forceload add 20 8` in the shop's dimension. Remote menus allow trades and leave management at the physical shop. See [Easy NPC command actions](https://github.com/MarkusBordihn/BOs-Easy-NPC/wiki/Actions).
 
-Market pricing is opt-in. All Coinage shop and pawn-shop trades share a market per world, keyed by the traded item ID. Purchases raise its pressure and sales lower it. Oversupply of other goods adds a small positive spillover. The default Crunch expression uses `pressure` from −50 to 50 and `spillover` from 0 to 10. The result is clamped to 50–150 percent of each offer's base price. Use separate retail and buyback base prices to prevent profitable round trips. The market persists across restarts and resets to base prices every two hours of world time by default (144,000 ticks). Set `[market].resetIntervalSeconds` in Fzzy Config to change the interval. The current reset deadline is kept, and the new setting takes effect when the following deadline is scheduled.
+Market pricing is opt-in. All Coinage shop and pawn-shop trades share a market per world, keyed by the traded item ID. Purchases raise its pressure and sales lower it. Oversupply of other goods adds a small positive spillover. The default Crunch expression uses `pressure` from −50 to 50 and `spillover` from 0 to 10. The result is clamped to 50–150 percent of each offer's base price. Use separate retail and buyback base prices to prevent profitable round trips.
+
+The market persists across restarts and resets to base prices every two hours of world time by default (144,000 ticks). Set `resetIntervalSeconds` under `[market]` to change the interval. The current reset deadline is kept, and the new setting takes effect when the following deadline is scheduled.
 
 To use the built-in Easy NPC trading screen instead, set up an NPC trade with one item on each side and a plain Coinage coin stack or money bag on one side. With market pricing enabled, those trades use the same world market as Coinage shops. The NPC editor keeps the configured base price. Emerald trades, two-input trades, and vanilla villagers keep their existing pricing.
 
@@ -143,6 +147,9 @@ Set the money bag loot entry's `"modifier"` to `"example:money_bag_reward"`, or 
 
 ## Build locally
 
-On Windows, run `./scripts/build.ps1 -Loader both -Target all`. On Linux, run `bash scripts/build.sh both all`. The scripts build each selected target and verify the release JARs in `build/<version>/<loader>/libs/`. Artifact verification requires Python 3.11 or newer.
+- Windows · `./scripts/build.ps1 -Loader both -Target all`
+- Linux · `bash scripts/build.sh both all`
+
+The scripts build each selected target and verify the release JARs in `build/<version>/<loader>/libs/`. Artifact verification requires Python 3.11 or newer.
 
 Coinage uses the [Bare Minimum License](LICENSE). See [NOTICE.md](NOTICE.md) and [LICENSE-UPSTREAM](LICENSE-UPSTREAM) for upstream attribution.

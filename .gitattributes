@@ -1,7 +1,7 @@
 * text=auto
 *.kt text eol=lf
 *.java text eol=lf
-*.gradle text eol=lf
+*.gradle.kts text eol=lf
 *.json text eol=lf
 *.sh text eol=lf
 *.ps1 text eol=lf

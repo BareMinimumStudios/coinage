@@ -2,13 +2,15 @@ package net.bms.coinage.mixin;
 
 import net.bms.coinage.TradeCatalog;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.trading.Merchant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(targets = {"net.minecraft.world.entity.npc.Villager", "net.minecraft.world.entity.npc.WanderingTrader"})
+@Mixin({Villager.class, WanderingTrader.class})
 public abstract class MerchantTradesMixin {
     @Inject(method = "updateTrades", at = @At("HEAD"), cancellable = true)
     private void coinage$replaceTrades(CallbackInfo callback) {

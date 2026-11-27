@@ -1,24 +1,25 @@
 package net.bms.coinage.client
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
 import com.mojang.blaze3d.platform.InputConstants
 import java.text.NumberFormat
 import java.util.Locale
+import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
 import net.bms.coinage.ClientPurseState
-import net.bms.coinage.CoinageItems
 import net.bms.coinage.CoinTier
+import net.bms.coinage.CoinageItems
 import net.bms.coinage.PurseClientConfig
 import net.bms.coinage.PurseNotifications
+import net.bms.coinage.PursePayloads
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button
-import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.EditBox
 import net.minecraft.client.gui.components.MultiLineEditBox
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.events.ContainerEventHandler
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
@@ -37,7 +38,7 @@ internal object PurseClient {
 
     fun initialize() {
         config = PurseClientConfig.register()
-        net.bms.coinage.PursePayloads.show = { PursePopupClient.open() }
+        PursePayloads.show = { PursePopupClient.open() }
     }
 
     fun reset() {

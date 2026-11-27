@@ -1,7 +1,7 @@
 package net.bms.coinage.client
 
 import com.mojang.blaze3d.systems.RenderSystem
-import org.lwjgl.opengl.GL11
+import java.util.Locale
 import net.bms.coinage.ClientPurseState
 import net.bms.coinage.CoinTier
 import net.bms.coinage.PurseSelection
@@ -14,6 +14,7 @@ import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
+import org.lwjgl.opengl.GL11
 
 internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen(Component.translatable("container.coinage.purse")) {
     private val client get() = Minecraft.getInstance()
@@ -47,7 +48,7 @@ internal class PursePopupScreen(val parent: AbstractContainerScreen<*>) : Screen
                 updateButtons()
             }
             val row = top + 10 + index * 12
-            val name = Component.translatable("item.coinage.${tier.name.lowercase(java.util.Locale.ROOT)}_coin")
+            val name = Component.translatable("item.coinage.${tier.name.lowercase(Locale.ROOT)}_coin")
             val up = addRenderableWidget(PurseSpriteButton(left + 24, row, 9, 5,
                 Component.translatable("gui.coinage.purse_increase", name), 37, 24) { adjust(1) })
             val down = addRenderableWidget(PurseSpriteButton(left + 24, row + 6, 9, 5,

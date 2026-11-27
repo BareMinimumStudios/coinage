@@ -34,7 +34,7 @@ jobs:
           java-version: '21'
           cache: gradle
           cache-dependency-path: |
-            **/*.gradle
+            **/*.gradle.kts
             gradle/wrapper/gradle-wrapper.properties
             targets/*.properties
       - uses: actions/setup-python@v7
