@@ -228,7 +228,7 @@ def verify(loader):
         if loader == "fabric":
             mod = json.loads(metadata)
             expected = {"fabricloader", "fabric-api", "minecraft", "java", "fabric-language-kotlin", "fzzy_config"}
-            if mod["id"] != mod_id or mod["name"] != "Coinage" or mod["license"] != "BML-1.0" or mod["authors"] != studio.split(", ") or set(mod["depends"]) != expected:
+            if mod["id"] != mod_id or mod["name"] != "Coinage" or mod["license"] != "BML-1.1" or mod["authors"] != studio.split(", ") or set(mod["depends"]) != expected:
                 raise SystemExit("Unexpected Fabric metadata")
             if mod["version"] != pins["mod_version"] or mod["depends"]["minecraft"] != target or mod["depends"]["java"] != ">=" + pins["java_version"]:
                 raise SystemExit("Fabric version constraints do not match the selected target")
@@ -237,7 +237,7 @@ def verify(loader):
                     raise SystemExit(f"Incorrect Fabric {side} entrypoint")
         else:
             mod = tomllib.loads(metadata)
-            if mod["modLoader"] != "kotlinforforge" or mod["license"] != "BML-1.0":
+            if mod["modLoader"] != "kotlinforforge" or mod["license"] != "BML-1.1":
                 raise SystemExit("Incorrect NeoForge Kotlin loader or license")
             declaration = mod["mods"]
             if len(declaration) != 1 or declaration[0]["modId"] != mod_id or declaration[0]["displayName"] != "Coinage" or declaration[0]["authors"] != studio or declaration[0]["version"] != pins["mod_version"]:
