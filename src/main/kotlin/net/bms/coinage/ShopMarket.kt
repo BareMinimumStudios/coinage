@@ -7,6 +7,7 @@ import redempt.crunch.Crunch
 
 internal class ShopMarket {
     private val pressure = HashMap<String, Int>()
+    private var totalSupplyPressure = 0L
     private var resetAt = 0L
     var revision = 0L
         private set
@@ -14,6 +15,7 @@ internal class ShopMarket {
     fun refresh(now: Long, intervalSeconds: Int, dirty: () -> Unit) {
         if (resetAt > now) return
         pressure.clear()
+        totalSupplyPressure = 0L
         resetAt = now + intervalSeconds * 20L
         revision++
         dirty()
@@ -21,19 +23,25 @@ internal class ShopMarket {
 
     fun record(item: String, units: Int) {
         val next = ((pressure[item] ?: 0) + units.coerceIn(-50, 50)).coerceIn(-50, 50)
-        if (next == 0) pressure.remove(item) else pressure[item] = next
+        setPressure(item, next)
         revision++
     }
 
+    private fun setPressure(item: String, value: Int) {
+        val previous = pressure[item] ?: 0
+        totalSupplyPressure += previous.coerceAtMost(0) - value.coerceAtMost(0)
+        if (value == 0) pressure.remove(item) else pressure[item] = value
+    }
+
     fun quote(item: String, base: Long, expression: String): Long {
-        if (pressure.isEmpty() || base <= 0) return base
+        if (pressure.isEmpty() || base <= 0 || expression.length > 96) return base
         val itemPressure = pressure[item] ?: 0
-        val spillover = pressure.entries.asSequence().filter { it.key != item && it.value < 0 }
-            .sumOf { -it.value.toLong() }.div(10).coerceAtMost(10)
+        val otherSupplyPressure = totalSupplyPressure + itemPressure.coerceAtMost(0)
+        val spillover = (otherSupplyPressure / 10).coerceAtMost(10)
         val formula = variables.replace(expression) {
             if (it.value == "pressure") "($itemPressure)" else "($spillover)"
         }
-        if (expression.length > 96 || !arithmetic.matches(formula)) return base
+        if (!arithmetic.matches(formula)) return base
         val percent = try {
             Crunch.evaluateExpression(formula)
         } catch (_: RuntimeException) {
@@ -59,7 +67,7 @@ internal class ShopMarket {
             ).apply(instance) { resetAt, pressure ->
                 ShopMarket().apply {
                     this.resetAt = resetAt
-                    pressure.forEach { (item, value) -> this.pressure[item] = value.coerceIn(-50, 50) }
+                    pressure.forEach { (item, value) -> setPressure(item, value.coerceIn(-50, 50)) }
                 }
             }
         }

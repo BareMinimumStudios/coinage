@@ -13,6 +13,7 @@ case "$target" in
   1.21.1|26.3) targets=("$target") ;;
   *) echo "Unknown Minecraft target: $target" >&2; exit 2 ;;
 esac
+python3 scripts/release.py --check
 for selected in "${targets[@]}"; do
   bash ./gradlew "-PcoinageTarget=$selected" "-PcoinageLoader=$loader" "$task" --console=plain
   if [[ "$loader" == both ]]; then

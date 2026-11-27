@@ -23,13 +23,10 @@ def verify(loader):
         raise SystemExit(f"Unsupported release target: {target}/{loader}")
     pins = dict(line.split("=", 1) for line in Path("targets", target + ".properties").read_text(encoding="utf-8").splitlines() if "=" in line and not line.startswith("#"))
     directory = Path("build", target, loader, "libs")
-    jars = [
-        path for path in directory.glob(f"coinage-{loader}-*.jar")
-        if not path.stem.endswith(("-dev", "-sources", "-all", "-unshaded"))
-    ]
-    if len(jars) != 1:
-        raise SystemExit(f"Expected one release JAR in {directory}. Clean stale builds and retry.")
-    with ZipFile(jars[0]) as archive:
+    jar = directory / f"coinage-{loader}-{pins['mod_version']}.jar"
+    if not jar.is_file():
+        raise SystemExit(f"Expected release JAR at {jar}.")
+    with ZipFile(jar) as archive:
         entries = archive.namelist()
         names = set(entries)
         if len(entries) != len(names):
@@ -250,7 +247,7 @@ def verify(loader):
                 raise SystemExit("Unexpected NeoForge runtime dependencies")
             if any(entry["type"] != "required" or entry["side"] != "BOTH" for entry in dependencies.values()):
                 raise SystemExit("Incorrect NeoForge dependency requirements")
-    print(f"Verified {jars[0]}")
+    print(f"Verified {jar}")
 
 
 if __name__ == "__main__":

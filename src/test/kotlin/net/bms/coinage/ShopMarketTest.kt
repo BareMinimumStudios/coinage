@@ -15,6 +15,11 @@ class ShopMarketTest {
         assertEquals(102L, market.quote("minecraft:carrot", 100, expression))
         market.record("minecraft:wheat", 10)
         assertEquals(90L, market.quote("minecraft:wheat", 100, expression))
+        assertEquals(101L, market.quote("minecraft:carrot", 100, expression))
+        market.record("minecraft:wheat", 30)
+        market.record("minecraft:carrot", -40)
+        assertEquals(124L, market.quote("minecraft:wheat", 100, expression))
+        assertEquals(60L, market.quote("minecraft:carrot", 100, expression))
         assertEquals(100L, market.quote("minecraft:wheat", 100, "bad expression"))
     }
 
@@ -29,6 +34,7 @@ class ShopMarketTest {
         val loaded = ShopMarket.codec.parse(JsonOps.INSTANCE, encoded).result().orElseThrow()
         assertEquals(50L, loaded.quote("minecraft:wheat", 100, "100 + pressure * 10"))
         assertEquals(Long.MAX_VALUE, loaded.quote("minecraft:carrot", Long.MAX_VALUE, "150"))
+        assertEquals(105L, loaded.quote("minecraft:carrot", 100, "100 + spillover"))
         val expression = "100 + pressure"
         loaded.refresh(143_999, 60) { error("Reset fired before the saved deadline") }
         assertEquals(50L, loaded.quote("minecraft:wheat", 100, expression))
@@ -38,6 +44,7 @@ class ShopMarketTest {
         loaded.record("minecraft:wheat", -20)
         loaded.refresh(145_199, 60) { error("Custom interval reset early") }
         assertEquals(80L, loaded.quote("minecraft:wheat", 100, expression))
+        assertEquals(102L, loaded.quote("minecraft:carrot", 100, "100 + spillover"))
         loaded.refresh(145_200, 60) {}
         assertEquals(100L, loaded.quote("minecraft:wheat", 100, expression))
     }

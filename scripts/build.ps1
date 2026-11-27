@@ -7,6 +7,8 @@ $previousLoader = $env:RELEASE_LOADER
 $previousTarget = $env:COINAGE_TARGET
 Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
+    & python scripts/release.py --check
+    if ($LASTEXITCODE -ne 0) { throw "Release metadata validation failed" }
     $targets = if ($Target -eq 'all') { @('1.21.1', '26.3') } else { @($Target) }
     $task = if ($Loader -eq 'both') { 'build' } else { ":${Loader}:build" }
     foreach ($selected in $targets) {
