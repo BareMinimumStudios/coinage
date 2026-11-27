@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 from shutil import copyfile
+from subprocess import run
 
 
 TARGETS = ("1.21.1", "26.3")
@@ -63,17 +64,34 @@ def release_notes(version):
     return notes.strip() + "\n"
 
 
+def validate_publish_ref(tag):
+    ref = os.environ.get("GITHUB_REF")
+    tag_ref = f"refs/tags/{tag}"
+    if ref == tag_ref:
+        return
+    if ref != "refs/heads/main" or os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
+        raise SystemExit(f"Select main for a manual publish, or use the {tag} tag.")
+
+    tagged_commit = run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{tag_ref}^{{commit}}"],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if tagged_commit and tagged_commit != os.environ.get("GITHUB_SHA"):
+        raise SystemExit(f"{tag} already points to another commit. Select {tag} to retry that release.")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="Validate version pins and changelog before a build.")
-    mode.add_argument("--publish", action="store_true", help="Require a matching GitHub release tag.")
+    mode.add_argument("--publish", action="store_true", help="Validate the branch or tag before publishing.")
     mode.add_argument("--stage", nargs=2, metavar=("MINECRAFT", "LOADER"), help="Stage a verified build.")
     args = parser.parse_args()
     metadata = release_metadata()
 
-    if args.publish and os.environ.get("GITHUB_REF") != f"refs/tags/{metadata['tag']}":
-        raise SystemExit(f"Publishing requires the {metadata['tag']} tag.")
+    if args.publish:
+        validate_publish_ref(metadata["tag"])
 
     notes = release_notes(metadata["version"])
     if args.check:
