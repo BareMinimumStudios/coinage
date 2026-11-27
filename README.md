@@ -1,8 +1,15 @@
 # Coinage
 
+![Coinage banner](docs/branding/banner.png)
+
 Coinage adds physical coins, a personal purse, piggy banks, player shops, pawn shops, and currency trades for villagers and wandering traders.
 
 By pokesmells and Bare Minimum Studios.
+
+- Earn four tiers of physical coins from eligible mobs, loot, and trading.
+- Carry coins in a personal purse, bundle them into money bags, or store them in piggy banks.
+- Buy and sell through player shops, pawn shops, and configurable merchant offers.
+- Enable shared supply-and-demand pricing and optional Easy NPC integration on your server.
 
 ## Install
 
@@ -32,6 +39,10 @@ Coins stack to 100. The default rates are 100 bronze to 1 silver, 100 silver to 
 | `/coinage balance <players> [get\|set\|add\|subtract]` | Inspect or update selected players' balances. Requires operator permission. Include an amount with set, add, or subtract. |
 | `/coinage serverworth` | Total all player purse balances, including offline players. Requires operator permission. |
 | `/coinage top [limit]` | Rank purse balances. Requires operator permission. |
+
+## Piggy banks
+
+Piggy banks hold physical coins and money bags in 27 slots. Open a bank and click the hopper button to quick-stack currency from your inventory.
 
 ## Purse funds on death
 
