@@ -1,6 +1,12 @@
 ![Coinage banner](https://raw.githubusercontent.com/BareMinimumStudios/coinage/main/docs/branding/banner.png)
 
-[![Modrinth](https://img.shields.io/badge/Modrinth-79501D?style=for-the-badge&logo=modrinth&logoColor=FFE6A1)](https://modrinth.com/mod/coinage-poke097) [![CurseForge](https://img.shields.io/badge/CurseForge-79501D?style=for-the-badge&logo=curseforge&logoColor=FFE6A1)](https://www.curseforge.com/minecraft/mc-mods/coinages) [![Stars](https://img.shields.io/github/stars/BareMinimumStudios/coinage?style=for-the-badge&label=Stars&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/stargazers) [![Forks](https://img.shields.io/github/forks/BareMinimumStudios/coinage?style=for-the-badge&label=Forks&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/forks) [![Open issues](https://img.shields.io/github/issues-raw/BareMinimumStudios/coinage?style=for-the-badge&label=Open%20issues&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/issues?q=is%3Aissue%20is%3Aopen)
+<p align="center" style="text-align: center;">
+  <a href="https://modrinth.com/mod/coinage-poke097"><img src="https://img.shields.io/badge/Modrinth-79501D?style=for-the-badge&amp;logo=modrinth&amp;logoColor=FFE6A1" alt="Modrinth" height="28"></a>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/coinages"><img src="https://img.shields.io/badge/CurseForge-79501D?style=for-the-badge&amp;logo=curseforge&amp;logoColor=FFE6A1" alt="CurseForge" height="28"></a>
+  <a href="https://github.com/BareMinimumStudios/coinage/stargazers"><img src="https://img.shields.io/github/stars/BareMinimumStudios/coinage?style=for-the-badge&amp;label=Stars&amp;labelColor=38281B&amp;color=8B591C" alt="Stars" height="28"></a>
+  <a href="https://github.com/BareMinimumStudios/coinage/forks"><img src="https://img.shields.io/github/forks/BareMinimumStudios/coinage?style=for-the-badge&amp;label=Forks&amp;labelColor=38281B&amp;color=8B591C" alt="Forks" height="28"></a>
+  <a href="https://github.com/BareMinimumStudios/coinage/issues?q=is%3Aissue%20is%3Aopen"><img src="https://img.shields.io/github/issues-raw/BareMinimumStudios/coinage?style=for-the-badge&amp;label=Open%20issues&amp;labelColor=38281B&amp;color=8B591C" alt="Open issues" height="28"></a>
+</p>
 
 **Minecraft 1.21.1 and 26.3 · Fabric and NeoForge · Client and server**
 
