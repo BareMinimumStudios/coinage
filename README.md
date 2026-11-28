@@ -1,6 +1,6 @@
 # Coinage
 
-![Coinage banner](docs/branding/banner.png)
+![Coinage banner](docs/branding/coinage-banner.png)
 
 Coinage adds physical coins, a personal purse, piggy banks, player shops, pawn shops, and currency trades for villagers and wandering traders.
 

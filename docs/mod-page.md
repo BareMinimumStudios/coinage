@@ -1,4 +1,4 @@
-![Coinage banner](https://raw.githubusercontent.com/BareMinimumStudios/coinage/main/docs/branding/banner.png)
+![Coinage banner](https://raw.githubusercontent.com/BareMinimumStudios/coinage/main/docs/branding/coinage-banner.png)
 
 <p align="center" style="text-align: center;">
   <a href="https://modrinth.com/mod/coinage-poke097"><img src="https://img.shields.io/badge/Modrinth-79501D?style=for-the-badge&amp;logo=modrinth&amp;logoColor=FFE6A1" alt="Modrinth" height="28"></a>
