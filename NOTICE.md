@@ -6,4 +6,4 @@ The default coin, money-bag, piggy-bank, shop, and pawn-shop artwork, models, an
 
 Gold adapts the original silver sprites, and platinum recolors the original gold sprites. Both retain the original 16×16 grid.
 
-The Coinage logo and banner use Coinage's in-game coin, money bag, and shop textures with separately composed backgrounds and typography.
+The Coinage logo and banner use Coinage's in-game coin and shop textures with separately composed backgrounds and typography.
