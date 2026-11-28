@@ -1,44 +1,44 @@
-# Coinage
-
-**Project summary**
-
-Physical coins, a personal purse, player shops, and configurable trading for Minecraft.
-
-**Project description**
-
 ![Coinage banner](https://raw.githubusercontent.com/BareMinimumStudios/coinage/main/docs/branding/banner.png)
+
+[![Modrinth](https://img.shields.io/badge/Modrinth-79501D?style=for-the-badge&logo=modrinth&logoColor=FFE6A1)](https://modrinth.com/mod/coinage-poke097) [![CurseForge](https://img.shields.io/badge/CurseForge-79501D?style=for-the-badge&logo=curseforge&logoColor=FFE6A1)](https://www.curseforge.com/minecraft/mc-mods/coinages)
+
+[![Stars](https://img.shields.io/github/stars/BareMinimumStudios/coinage?style=for-the-badge&label=Stars&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/stargazers) [![Forks](https://img.shields.io/github/forks/BareMinimumStudios/coinage?style=for-the-badge&label=Forks&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/forks) [![Open issues](https://img.shields.io/github/issues-raw/BareMinimumStudios/coinage?style=for-the-badge&label=Open%20issues&labelColor=38281B&color=8B591C)](https://github.com/BareMinimumStudios/coinage/issues?q=is%3Aissue%20is%3Aopen)
 
 **Minecraft 1.21.1 and 26.3 · Fabric and NeoForge · Client and server**
 
-[Documentation](https://github.com/BareMinimumStudios/coinage#readme) · [Source code](https://github.com/BareMinimumStudios/coinage) · [Report an issue](https://github.com/BareMinimumStudios/coinage/issues) · [Discord community](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
+[Documentation](https://github.com/BareMinimumStudios/coinage#readme) · [Source code](https://github.com/BareMinimumStudios/coinage) · [Discord](https://discord.gg/pcRw79hwey) · [Ko-fi](https://ko-fi.com/pokesmells)
 
-## Coinage
+Coinage gives your world a physical currency and places to spend it. Pick up coins from loot or eligible mobs, carry them in your purse, and trade with merchants or other players.
 
-Find coins in loot, earn them from eligible mobs and merchants, and spend them at shops run by other players. Coinage brings a physical currency and a configurable economy to Minecraft.
+## Coins and purses
 
-## Earn, carry, and spend
+- **Bronze, silver, gold, and platinum.** Each coin tier stacks to 100. By default, 100 coins equal one coin of the next tier. Servers can adjust those rates.
+- **A purse for every player.** Press **B**, use the inventory button, or run `/coinage purse`. Withdraw coins, bundle money into bags, or use `/coinage pay` when player payments are enabled.
+- **Optional automatic collection.** Run `/coinage autocollect toggle` to send picked-up coins directly to your purse.
+- **Piggy banks and money bags.** Store spare change or carry a fixed amount in a bag. If the server drops purse money on death, compatible versions of You're in Grave Danger and GraveStone Mod can capture the dropped bag.
 
-- **Four coin tiers.** Bronze, silver, gold, and platinum each stack to 100. By default, 100 coins of one tier trade up to one coin of the next. Servers can change those exchange rates.
-- **A purse for every player.** Press **B**, click the inventory purse, or run `/coinage purse` to open it. Withdraw physical coins or bundle an amount into a money bag. Send money directly with `/coinage pay` when the server enables player payments.
-- **Optional automatic collection.** Run `/coinage autocollect toggle` to send picked-up coins straight to your purse. The preference is saved per player and starts off.
-- **Piggy banks and money bags.** Quick-stack physical currency into a piggy bank, find money bags in loot, and configure how much purse money drops on death. Compatible versions of You're in Grave Danger and GraveStone Mod can capture the dropped bag.
+## Shops and trading
 
-## Shops and merchants
+- **Player shops and pawn shops.** Sell goods from your stock or buy them from other players with funds you supply. Server operators can also set up shops with unlimited stock or funds.
+- **Villagers and wandering traders.** Configure merchant offers and pay for eligible trades directly from your purse.
+- **Shared supply and demand.** When enabled, purchases and sales affect prices across participating shops. Prices return to their base values on a configurable timer, which defaults to two hours of game time at 20 TPS.
+- **Easy NPC integration.** Open a named Coinage shop from an NPC command or use shared market prices for eligible trades in Easy NPC’s trading screen.
 
-- **Shops and pawn shops.** Set your own offers and prices. Shops sell from stock, and pawn shops buy goods with funds you supply. Server operators can use inexhaustible variants.
-- **Villager and wandering trader offers.** Use Coinage's trade profiles, add them alongside native trades, or leave trades to Minecraft and other mods. Coinage can pay eligible trades from the purse.
-- **Optional shared prices.** Shop prices react to what players buy and sell across the world. The market resets to base prices after a configurable interval. The default is two hours of game time at 20 TPS.
-- **Optional Easy NPC integration.** Open named Coinage shops from NPC actions, or use shared market prices in eligible trades in Easy NPC's built-in trading screen.
-
-Server owners configure the economy through Fzzy Config. Datapacks can define merchant offers, extend the mob currency drop tag, and set money bag values in loot.
+Server owners can configure the economy through Fzzy Config and use datapacks to customize merchant offers and coin drops.
 
 ## Installation
 
-Fabric and NeoForge builds target **Minecraft 1.21.1** (Java 21) and **Minecraft 26.3** (Java 25). Install the matching build and dependencies on the server and on each modded client.
+Install the matching Coinage build and its dependencies on the server and each modded client. Use **Java 21** for Minecraft **1.21.1** or **Java 25** for **26.3**.
 
-- **Fabric** · Fabric API, Fabric Language Kotlin, and Fzzy Config
-- **NeoForge** · Kotlin for Forge and Fzzy Config
+- **Fabric:** Fabric API, Fabric Language Kotlin, and Fzzy Config.
+- **NeoForge:** Kotlin for Forge and Fzzy Config.
 
 ## Credits
 
-By pokesmells and Bare Minimum Studios. Coinage uses the [Bare Minimum License](https://github.com/BareMinimumStudios/coinage/blob/main/LICENSE). See the [upstream attribution](https://github.com/BareMinimumStudios/coinage/blob/main/NOTICE.md) for material adapted from Numismatic Overhaul.
+Created by pokesmells and Bare Minimum Studios under the [Bare Minimum License v1.1](https://github.com/BareMinimumStudios/coinage/blob/main/LICENSE). See the [upstream attribution](https://github.com/BareMinimumStudios/coinage/blob/main/NOTICE.md) for material adapted from Numismatic Overhaul.
+
+## Sponsor
+
+[![BisectHosting sponsor banner](https://www.bisecthosting.com/partners/custom-banners/db76a74a-a111-4660-98b7-5a75c15a5951.png)](https://bisecthosting.com/bareminimum)
+
+Use code **`bareminimum`** to get **25% off your first month**!
